@@ -1,4 +1,6 @@
+docs/clone_notes.html
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+inst/doc

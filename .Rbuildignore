@@ -1,2 +1,15 @@
+^codecov\.yml$
+^\.travis\.yml$
+^appveyor\.yml$
+^docs$
+^pkgdown$
+^clone_notes\.md$
+^inst/\.lintr$
+^\.lintr$
+^revdep$
+^README\.Rmd$
+^data-raw$
+^cran-comments\.md$
+^LICENSE\.md$
 ^.*\.Rproj$
 ^\.Rproj\.user$

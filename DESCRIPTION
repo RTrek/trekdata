@@ -1,0 +1,25 @@
+Package: trekdata
+Title: Extract and Curate Datasets for the 'rtrek' Package
+Version: 0.0.0.9000
+Authors@R:
+    c(person(given = "Matthew",
+             family = "Leonawicz",
+             role = c("aut", "cre"),
+             email = "matt_leonawicz@esource.com"))
+Description: Provides functions for extracting and curating 'rtrek' package datasets from various data sources.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+URL: https://github.com/leonawicz/trekdata
+BugReports: https://github.com/leonawicz/trekdata/issues
+Depends: R (>= 3.5.0)
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown,
+    lintr,
+    covr
+VignetteBuilder: knitr
+Imports: 
+    magrittr
+RoxygenNote: 6.1.0
