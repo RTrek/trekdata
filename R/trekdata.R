@@ -1,3 +1,5 @@
+globalVariables(c(".data"))
+
 #' trekdata: Functions for extracting and curating \code{rtrek} package datasets.
 #'
 #' \code{trekdata} provides functions for extracting and curating \code{rtrek} package datasets from various data sources.

@@ -1,7 +1,7 @@
 tl_entries <- function(x, step = 1){
   x <- tl_filter_lines(x)
   x <- split(x, cumsum(
-    (!grepl("§|\\(|;|\"|\\d\\.\\d", x) & grepl("^     (\\d|C\\.\\d)", x)) |
+    (!grepl("\u00A7|\\(|;|\"|\\d\\.\\d", x) & grepl("^     (\\d|C\\.\\d)", x)) |
       grepl("^     3\\.5 BILLION|^     2\\.5 BILLION", x) # correction
     ))
   x <- purrr::map(x, ~{
@@ -109,20 +109,20 @@ tl_abb <- function(){
               "The Next Generation", "The Original Series", "Voyager")
   anth_abb <- c("CON", "DS", "EL", "NL", "PAC", "SNW", "CT", "TLOD", "TNV", "TNV2", "TODW", "WLB", "YA")
   anth <- c(paste(
-    c("Constellations", "Distant Shores", "Enterprise Logs", "New Frontier: No Limits", "Deep Space Nine: Prophecy and Change",
-      "Strange New Worlds", "Tales from the Captain's Table", "The Lives of Dax", "The New Voyages",
-      "The New Voyages 2", "Tales of the Dominion War", "Gateways: What Lay Beyond"), "Anthology"), "Young Adult Book")
+    c("Constellations", "Distant Shores", "Enterprise Logs", "New Frontier: No Limits",
+      "Deep Space Nine: Prophecy and Change", "Strange New Worlds", "Tales from the Captain's Table",
+      "The Lives of Dax", "The New Voyages", "The New Voyages 2", "Tales of the Dominion War",
+      "Gateways: What Lay Beyond"), "Anthology"), "Young Adult Book")
   dplyr::data_frame(collection = c(series, anth), abb = c(series_abb, anth_abb),
                     type = rep(c("series", "anthology"), times = c(length(series), length(anth))))
 }
 
 .tl_collection <- function(x, type = c("series", "anthology")){
   type <- match.arg(type)
-  x0 <- x
   x <- gsub("(.*) -- .*", "\\1", x)
   y <- tl_abb()$abb[tl_abb()$type == type]
-  y <- sapply(y, function(i) grepl(paste0("\\(", i, " "), x) | grepl(paste0(i, "\\)"), x) | grepl(paste0(" ", i, " "), x))
-  if(!length(y[[1]])){print(x0);print(y)}
+  y <- sapply(y, function(i) grepl(paste0("\\(", i, " "), x) | grepl(paste0(i, "\\)"), x) |
+                grepl(paste0(" ", i, " "), x))
   if(!is.matrix(y)) y <- t(as.matrix(y))
   if(any(rowSums(y) > 1)) warning("Multiple entries")
   y <- colnames(y)[apply(y, 1, function(x) if(!any(x)) 999 else which(x == TRUE))]
@@ -178,7 +178,5 @@ tl_clean_entry <- function(x, step = 1){
                          section = .tl_section(x),
                          primary_entry_year = .tl_primary_entry(x),
                          footnote = .tl_footnote_number(x))
-  d <- dplyr::mutate(d, title = .tl_title(title))
-  #year, title, series, format, number, setting, stardate_start, stardate_end, section, primary_entry_year, footnote
-  d
+  dplyr::mutate(d, title = .tl_title(.data[["title"]]))
 }

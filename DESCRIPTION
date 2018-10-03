@@ -1,6 +1,6 @@
 Package: trekdata
 Title: Extract and Curate Datasets for the 'rtrek' Package
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R:
     c(person(given = "Matthew",
              family = "Leonawicz",
@@ -21,5 +21,7 @@ Suggests:
     covr
 VignetteBuilder: knitr
 Imports: 
-    magrittr
+    magrittr,
+    dplyr,
+    purrr
 RoxygenNote: 6.1.0

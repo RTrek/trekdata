@@ -1,5 +1,4 @@
 tl_clean_text <- function(x, fix = c(151, 300)){
-  x <- gsub("“|”", "\"", x)
   x <- gsub("\u2014", "-", x)
   x <- gsub("\u2018|\u2019", "'", x)
   x <- gsub("\u201C|\u201D", "\"", x)
