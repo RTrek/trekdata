@@ -1,9 +1,14 @@
 tl_clean_text <- function(x, fix = c(151, 300)){
-  x <- gsub("\u2014", "-", x)
+  x <- gsub("\u2010|\u2011|\u2012|\u2013|\u2014|\u2015", "-", x)
   x <- gsub("\u2018|\u2019", "'", x)
   x <- gsub("\u201C|\u201D", "\"", x)
+  x <- gsub("\u2026", "...", x)
   x <- gsub("P&C", "PAC", x)
   x <- gsub("TFTCT", "CT", x)
+  x <- gsub("([A-Za-z])\\(", "\\1 \\(", x)
+  x <- gsub("TOS #78\\)", "\\(TOS #78\\)", x)
+  x <- gsub("Section31", "Section 31", x)
+  x <- x[-grep("^\\s+-Episodes \\(not", x)]
   idx <- sapply(fix, function(i) grep(paste0("^      ", i, " Story "), x))
   x[idx] <- gsub("      ", "    ", x[idx])
   x

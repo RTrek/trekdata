@@ -1,12 +1,11 @@
 tl_entries <- function(x, step = 1){
   x <- tl_filter_lines(x)
   x <- split(x, cumsum(
-    (!grepl("\u00A7|\\(|;|\"|\\d\\.\\d", x) & grepl("^     (\\d|C\\.\\d)", x)) |
+    (!grepl("\u00A7|\\(|;|\"|\\d\\.\\d", x) & grepl("^     (\\d|C\\.\\d|C\\. \\d)", x)) |
       grepl("^     3\\.5 BILLION|^     2\\.5 BILLION", x) # correction
     ))
   x <- purrr::map(x, ~{
     if(length(grep(" -- ", .x[1]))){
-      print(.x)
       return(c(strsplit(.x[1], " -- ")[[1]], .x[-1]))
     } else .x
   })
@@ -19,55 +18,131 @@ tl_entries <- function(x, step = 1){
     fnote <- as.numeric(trimws(x[idx]))
     idx <- idx[fnote <= 493]
     if(length(idx)){
-      x[idx - 1] <- paste0(x[idx - 1], trimws(x[idx]))
+      x[idx - 1] <- paste0(x[idx - 1], "FN_", trimws(x[idx]))
       x <- x[-idx]
     }
   }
+  x <- gsub("AFTERMATH \\(SCE EBOOK #29\\)1", "AFTERMATH \\(SCE EBOOK #29\\)458", x)
+  x <- gsub("FIRESTORM \\(TOS #68\\)21", "FIRESTORM \\(TOS #68\\)143", x)
   x
 }
 
 .tl_move_indented <- function(x){
-  idx <- grepl("^      .*", x) & !grepl("^      (SARATOGA|ENTERPRISE).*", x) # correction
-  idx <- which(idx == TRUE)
-  if(length(idx)){
-
-    x[idx - 1] <- paste(x[idx - 1], "--", trimws(x[idx]))
-    x <- x[-idx]
+  idx <- which(grepl("^      .*", x) & !grepl("^      (SARATOGA|ENTERPRISE).*", x)) # correction
+  while(length(idx)){
+    x[idx[1] - 1] <- paste(x[idx[1] - 1], "--", trimws(x[idx[1]]))
+    x <- x[-idx[1]]
+    idx <- which(grepl("^      .*", x) & !grepl("^      (SARATOGA|ENTERPRISE).*", x))
   }
   x
 }
 
 .tl_move_dashed <- function(x){
   idx <- grep("^\\s+-.*", x)
-  if(length(idx)){
-    y <- gsub("^-", "", trimws(x[idx]))
-    x[idx - 1] <- paste(x[idx - 1], "--", y)
-    x <- x[-idx]
+  while(length(idx)){
+    y <- gsub("^-", "", trimws(x[idx[1]]))
+    x[idx[1] - 1] <- paste(x[idx[1] - 1], "--", y)
+    x <- x[-idx[1]]
+    idx <- grep("^\\s+-.*", x)
+  }
+  x
+}
+
+.tl_move_bullets <- function(x){
+  idx <- which(grepl("^\\s+.*-\\[.*\\]", x) & !grepl("^\\s+.*;\\s", x))
+  while(length(idx)){
+    y <- trimws(x[idx[1]])
+    x[idx[1] - 1] <- paste(x[idx[1] - 1], "--", y)
+    x <- x[-idx[1]]
+    idx <- which(grepl("^\\s+.*-\\[.*\\]", x) & !grepl("^\\s+.*(;\\s|\\s--\\s.*-\\[.*\\])", x))
+  }
+  x
+}
+
+.tl_fix_kobayashi <- function(x){
+  idx <- grep(" OBAYASHI", x)
+  while(length(idx)){
+    x[idx[1] - 1] <- paste0(x[idx[1] - 1], trimws(x[idx[1]]))
+    x <- x[-idx[1]]
+    idx <- grep(" OBAYASHI", x)
+  }
+  idx <- grep("(^|[^E]) KOBAYASHI", gsub("\\s+", " ", x))
+  while(length(idx)){
+    x[idx[1] - 1] <- gsub("E\\s+K", "E K", paste(x[idx[1] - 1], trimws(x[idx[1]])))
+    x <- x[-idx[1]]
+    idx <- grep("(^|[^E]) KOBAYASHI", gsub("\\s+", " ", x))
+  }
+  idx <- grep("KOBAYASHI($| $| [^M])", x)
+  while(length(idx)){
+    y <- trimws(x[idx[1] + 1])
+    x[idx[1]] <- gsub("I\\s+M", "I M", paste(x[idx[1]], y))
+    x <- x[-(idx[1] + 1)]
+    idx <- grep("KOBAYASHI($| $| [^M])", x)
+  }
+  idx <- grep("KOBAYASHI M($| $|[^A])", x)
+  while(length(idx)){
+    y <- trimws(x[idx[1] + 1])
+    x[idx[1]] <- gsub(" M ", " M", paste0(x[idx[1]], y))
+    x <- x[-(idx[1] + 1)]
+    idx <- grep("KOBAYASHI M($| $|[^A])", x)
   }
   x
 }
 
 .tl_move_linebreak <- function(x){
-  idx <- grep("^     [A-Za-z ]+\"-.*", x)
-  if(length(idx)){
-    y <- gsub("^-", "", trimws(x[idx]))
-    x[idx - 1] <- paste0(x[idx - 1], y)
-    x <- x[-idx]
+  fixes <- c("NOVELIZATION\\)178", "^     \\d+\\.\\d$", "^     \\d+-", "^\\s+\\([A-Z0-9 #]+\\)($|FN| -- )")
+  idx <- grep(paste0(c("^     ([A-Za-z ]+\"-|\\d+, ).*", fixes), collapse = "|"), x)
+  while(length(idx)){
+    y <- gsub("^-", "", trimws(x[idx[1]]))
+    x0 <- x[idx[1] - 1]
+    idx2 <- grep("[A-Za-z]", substr(x0, nchar(x0), nchar(x0)))
+    idx3 <- grep("[A-Za-z\\(]", substr(y, 1, 1))
+    if(length(idx2) & length(idx3)) y <- paste0(" ", y)
+    x[idx[1] - 1] <- paste0(x[idx[1] - 1], y)
+    x <- x[-idx[1]]
+    idx <- grep(paste0(c("^     ([A-Za-z ]+\"-|\\d+, ).*", fixes), collapse = "|"), x)
   }
+  idx <- grep("THE $|THE V$", x)
+  while(length(idx)){
+    x[idx[1]] <- paste0(x[idx[1]], trimws(x[idx[1] + 1]))
+    x <- x[-(idx[1] + 1)]
+    idx <- grep("THE $|THE V$", x)
+  }
+  idx <- grep("^\\s+\\(ENT\\) \"E$", x)
+  if(length(idx)){
+    x[idx[1]] <- paste0(x[idx[1]], trimws(x[idx[1] + 1]))
+    x <- x[-(idx[1] + 1)]
+  }
+  idx <- grep("From The Star Trek Chronology", x)
+  if(length(idx)){
+    x[idx - 1] <- paste(x[idx - 1], "--", paste0(trimws(x[idx + 0:3]), collapse = " "))
+    x <- x[-c(idx + 0:3)]
+  }
+  idx <- grep(": $", x)
+  while(length(idx)){
+    x[idx[1]] <- paste0(x[idx[1]], trimws(x[idx[1] + 1]), collapse = "")
+    x <- x[-c(idx[1] + 1)]
+    idx <- grep(": $", x)
+  }
+  x <- gsub(":  -- ", ": ", x)
   x
 }
 
 .tl_primary_entry <- function(x){
   idx <- grepl("see primary entry in", x)
-  if(any(idx)) x[idx] <- gsub(".*entry in (\\d+)\\)", "\\1", x[idx])
+  if(any(idx)) x[idx] <- gsub(".*entry in (\\d+).*", "\\1", x[idx])
   x[!idx] <- NA
-  x
+  as.integer(x)
 }
 
 .tl_format <- function(x){
-  out <- rep("book", length(x))
-  idx <- !grep("[a-z]", x)
-  if(length(idx)) idx <- grep("^(\\{.*\\} |)\"[A-Z ]+\"", x)
+  out <- rep(NA, length(x))
+  x <- sapply(strsplit(x, " -- "), "[", 1)
+  idx <- grep("[^a-z]", x)
+  if(length(idx)){
+    out[idx] <- "book"
+    idx <- grep("^(\\{.*\\} |)\"[A-Z ]+\"", x)
+  }
   if(length(idx)) out[idx] <- "story"
   idx <- grep("^\\([A-Z]+\\) \"", x)
   if(length(idx)) out[idx] <- "episode"
@@ -75,23 +150,64 @@ tl_entries <- function(x, step = 1){
 }
 
 .tl_stardate <- function(x){
-  pat1 <- "^\\{STARDATE (\\d+\\.?\\d)\\}.*"
-  pat2 <- "^\\{STARDATE (\\d+\\.?\\d)\ TO (\\d+\\.?\\d)\\}.*"
+  x <- gsub("FN_\\d+", "", x)
+  x <- gsub("(STARDATE \\d+\\.) (\\d+)", "\\1\\2", x)
+  pat1 <- "^\\{STARDATE (\\d+\\.?\\d+?)\\}.*"
+  pat2 <- "^\\{STARDATE (\\d+\\.?\\d+?)\ (TO|THROUGH) (\\d+\\.?\\d+?)\\}.*"
+  pat3 <- "^\\([A-Z]+\\) \".*\"-Stardate (\\d+\\.?\\d+?)( .*|)"
+  pat4 <- "^\\([A-Z]+\\) \".*\"-Stardate (\\d+\\.?\\d+?) (to|through) (\\d+\\.?\\d+?)(,.*|$)"
+  pat5 <- ".*STARDATES (\\d+\\.\\d) TO (\\d+\\.\\d).*"
   idx1 <- grep(pat1, x)
   idx2 <- grep(pat2, x)
+  idx3 <- grep(pat3, x)
+  idx4 <- grep(pat4, x)
+  idx5 <- grep(pat5, x)
   y <- list(rep(NA, length(x)), rep(NA, length(x)))
   if(length(idx1)) y[[1]][idx1] <- gsub(pat1, "\\1", x[idx1])
   if(length(idx2)){
     y[[1]][idx2] <- gsub(pat2, "\\1", x[idx2])
-    y[[2]][idx2] <- gsub(pat2, "\\2", x[idx2])
+    y[[2]][idx2] <- gsub(pat2, "\\3", x[idx2])
   }
-  y
+  if(length(idx3)) y[[1]][idx3] <- gsub(pat3, "\\1", x[idx3])
+  if(length(idx4)){
+    y[[1]][idx4] <- gsub(pat4, "\\1", x[idx4])
+    y[[2]][idx4] <- gsub(pat4, "\\3", x[idx4])
+  }
+  if(length(idx5)){
+    y[[1]][idx5] <- gsub(pat5, "\\1", x[idx5])
+    y[[2]][idx5] <- gsub(pat5, "\\2", x[idx5])
+  }
+  lapply(y, as.numeric)
+}
+
+.tl_detailed_date <- function(x){
+  idx <- grepl("^\\{(.*)\\} .*", x)
+  stardate_idx <- grepl("^\\{STARDATE.*\\} .*", x)
+  idx <- which(idx & !stardate_idx)
+  y <- rep(NA, length(x))
+  if(length(idx)) y[idx] <- gsub("^\\{(.*)\\} .*", "\\1", x[idx])
+  pat <- paste0(".*([A-Za-z]\"-)(", paste(month.name, collapse = "|"), ")(| \\d\\d?| \\d\\d?-\\d\\d?)($|,? )(\\d\\d\\d\\d).*")
+  idx <- grep(pat, x)
+  if(length(idx)) y[idx] <- gsub(pat, "\\2\\3\\4\\5", x[idx])
+  y <- gsub("(.*), STARDATES.*", "\\1", y)
+  .tl_title_case(y)
+}
+
+.tl_strip_detailed_date <- function(x){
+  idx <- grepl("^\\{(.*)\\} .*", x)
+  stardate_idx <- grepl("^\\{STARDATE.*\\} .*", x)
+  idx <- which(idx & !stardate_idx)
+  if(length(idx)) x[idx] <- gsub("^\\{.*\\} (.*)", "\\1", x[idx])
+  pat <- paste0("^(.*)-(", paste(month.name, collapse = "|"), ")(| \\d\\d?| \\d\\d?-\\d\\d?)(|,? )(|\\d\\d\\d\\d).*")
+  idx <- grep(pat, x)
+  if(length(idx)) x[idx] <- gsub(pat, "\\1", x[idx])
+  x
 }
 
 .tl_footnote_number <- function(x){
-  idx <- grep("\\)(\\d+)( -- |$)", x)
+  idx <- grep("(\\)|FN_|\"|#2|47457\\.1|\\]|#73\\) )(\\d+)( -- |$)", x)
   y <- rep(NA, length(x))
-  if(length(idx)) y[idx] <- gsub(".*\\)(\\d+)( -- .*|$)", "\\1", x[idx])
+  if(length(idx)) y[idx] <- gsub(".*(\\)|FN_|\"|#2|47457\\.1|\\]|#73\\) )(\\d+)( -- .*|$)", "\\2", x[idx])
   as.integer(y)
 }
 
@@ -99,7 +215,9 @@ tl_entries <- function(x, step = 1){
   idx <- grep("#\\d+\\)", x)
   y <- rep(NA, length(x))
   if(length(idx)) y[idx] <- gsub(".*#(\\d+)\\).*", "\\1", x[idx])
-  as.integer(y)
+  y <- as.integer(y)
+  y[y >= 500] <- NA
+  y
 }
 
 tl_abb <- function(){
@@ -121,8 +239,8 @@ tl_abb <- function(){
   type <- match.arg(type)
   x <- gsub("(.*) -- .*", "\\1", x)
   y <- tl_abb()$abb[tl_abb()$type == type]
-  y <- sapply(y, function(i) grepl(paste0("\\(", i, " "), x) | grepl(paste0(i, "\\)"), x) |
-                grepl(paste0(" ", i, " "), x))
+  y <- sapply(y, function(i) grepl(paste0("\\(", i, "(-| )"), x) | grepl(paste0(i, "\\)"), x) |
+                grepl(paste0(" ", i, " "), x) | grepl(paste0("-", i, " "), x))
   if(!is.matrix(y)) y <- t(as.matrix(y))
   if(any(rowSums(y) > 1)) warning("Multiple entries")
   y <- colnames(y)[apply(y, 1, function(x) if(!any(x)) 999 else which(x == TRUE))]
@@ -135,16 +253,23 @@ tl_abb <- function(){
 }
 
 .tl_title <- function(x){
-  x <- gsub("\\{STARDATE.*\\} |\\(.*\\)", "", x)
-  x <- sapply(strsplit(x, " -- ", x), "[", 1)
+  x <- gsub("FN_\\d+| -- .*", "", x)
+  x <- gsub("\\{STARDATE.*\\} |\\(.*\\)|\\)\\d\\d?\\d?$", "", x)
+  x <- gsub("(.*)-Stardate \\d+\\.?\\d+?($| (to|through) \\d+\\.?\\d+?(,|$))", "\\1", x)
+  x <- gsub("(.*)( |\\.\\.\\.)\\d\\d?\\d?($| -- .*)", "\\1\\2\\3", x)
+  x <- gsub("\\s+", " ", x)
   x <- gsub("\"", "", x)
-  trimws(x) %>% .tl_title_case()
+  x <- gsub("\\(.*", "", x)
+  trimws(x) %>% .tl_strip_detailed_date() %>% .tl_title_case()
 }
 
 .tl_title_case <- function(x){
-  x <- gsub("(^|-|[[:space:]])([[:alpha:]])([[:alpha:]]+)", "\\1\\2\\L\\3", x, perl = TRUE)
+  x <- gsub("(^|-|\\.\\.\\.|[[:space:]])([[:alpha:]])([[:alpha:]]+)", "\\1\\2\\L\\3", x, perl = TRUE)
   x <- gsub("(')([[:alpha:]])( |$)", "\\1\\L\\2\\3", x, perl = TRUE)
-  gsub("( A | The | An | For | Of | In | On )", "\\L\\1", x, perl = TRUE)
+  pat <- "(.*[^:] )(A|The|An|And|As|Is|To|For|From|Of|In|On)( .*)"
+  x <- gsub(pat, "\\1\\L\\2\\E\\3", x, perl = TRUE)
+  x <- gsub(pat, "\\1\\L\\2\\E\\3", x, perl = TRUE)
+  x
 }
 
 .tl_setting <- function(x){
@@ -153,16 +278,31 @@ tl_abb <- function(){
 }
 
 .tl_section <- function(x){
-  x <- gsub("\\{STARDATE.*\\} |\\(.*\\)", "", x)
+  x <- gsub("\\{STARDATE.*\\} |[^( -- )]\\(.*\\)", "", x)
   x <- strsplit(x, " -- ")
   x <- sapply(x, function(i) if(length(i) == 1) NA else paste0(i[2:length(i)], collapse = "; "))
+  x <- gsub(" \\(see primary.*\\)", "", x)
+  x
 }
 
-tl_clean_entry <- function(x, step = 1){
-  x <- x[!grepl("^(\\s+|)$", x)] %>% .tl_move_footnote() %>% .tl_move_indented() %>%
-    .tl_move_dashed() %>% .tl_move_linebreak()
-  x <- gsub("  ", " ", trimws(x))
-  year <- tolower(x[1])
+.tl_year <- function(x){
+  x <- gsub("^C\\.|,| AD$", "", x)
+  if(grepl(" BC$", x)) x <- paste0("-", gsub(" BC", "", x))
+  if(grepl("BILLION", x)) x <- paste0("-", gsub("^(\\d|\\d\\.\\d) .*", "\\1", x), "e9")
+  as.numeric(x)
+}
+
+tl_clean_entry <- function(x, step = 1){ # MUST ADD CIRCA/YEARS AGO TO DETAILED DATE COLUMN
+  x <- gsub("; ", ", ", x)
+  x <- gsub("\"A &\\s(\"|)", "\"A AND\"", x)
+  if(length(grep("K$", x))) x0 <<- x
+  x <- .tl_fix_kobayashi(x)
+  x <- .tl_move_linebreak(x)
+  x <- x[!grepl("^(\\s+|)$", x)] %>% .tl_move_footnote() %>% .tl_move_bullets() %>%
+    .tl_move_indented() %>% .tl_move_dashed() #%>%
+  x <- gsub("\\(VGR-YA #2216", "\\(VGR-YA #2\\)216", x) # fix
+  x <- gsub("\\s+", " ", trimws(x))
+  year <- .tl_year(x[1])
   x <- x[-1]
   if(!length(x)) return()
   stardate <- .tl_stardate(x)
@@ -175,6 +315,7 @@ tl_clean_entry <- function(x, step = 1){
                          setting = .tl_setting(x),
                          stardate_start = stardate[[1]],
                          stardate_end = stardate[[2]],
+                         detailed_date = .tl_detailed_date(x),
                          section = .tl_section(x),
                          primary_entry_year = .tl_primary_entry(x),
                          footnote = .tl_footnote_number(x))
