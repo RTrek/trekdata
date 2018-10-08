@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Changelog • trekdata</title>
+<title>Website build helpers — build_site • trekdata</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -32,7 +32,10 @@
 
   <link href="../extra.css" rel="stylesheet">
   
-<meta property="og:title" content="Changelog" />
+<meta property="og:title" content="Website build helpers — build_site" />
+
+<meta property="og:description" content="Helper functions for building the rtrek package website." />
+<meta name="twitter:card" content="summary" />
 
 
 
@@ -58,7 +61,7 @@
   </head>
 
   <body>
-    <div class="container template-news">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
   <div class="container">
@@ -163,37 +166,60 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Changelog <small></small></h1>
-      <small>Source: <a href='https://github.com/leonawicz/trekdata/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
+    <h1>Website build helpers</h1>
+    <small class="dont-index">Source: <a href='https://github.com/leonawicz/trekdata/blob/master/R/utils.R'><code>R/utils.R</code></a></small>
+    <div class="hidden name"><code>build_site.Rd</code></div>
     </div>
 
-    <div id="trekdata-0-1-0" class="section level1">
-<h1 class="page-header">
-<a href="#trekdata-0-1-0" class="anchor"></a>trekdata 0.1.0</h1>
-<ul>
-<li>Added functions for parsing and curating externally sourced timeline data.</li>
-<li>Moved additional functions from the <code>rtrek</code> package repository <code>data-raw</code> directory: tweet data and general utilities.</li>
-</ul>
-</div>
-    <div id="trekdata-0-0-0-9000" class="section level1">
-<h1 class="page-header">
-<a href="#trekdata-0-0-0-9000" class="anchor"></a>trekdata 0.0.0.9000</h1>
-<ul>
-<li>Added initial package scaffolding.</li>
-</ul>
-</div>
-  </div>
+    <div class="ref-description">
+    
+    <p>Helper functions for building the <code>rtrek</code> package website.</p>
+    
+    </div>
 
+    <pre class="usage"><span class='fu'>build_site</span>()
+
+<span class='fu'>build_articles</span>()
+
+<span class='fu'>build_article</span>(<span class='kw'>id</span> <span class='kw'>=</span> <span class='st'>"sc"</span>)</pre>
+    
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>id</th>
+      <td><p>character, the ID (<code>"sc"</code> or <code>"rr"</code>) for the Stellar Cartography and the Rest and Relaxation pages, respectively.</p></td>
+    </tr>
+    </table>
+    
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>nothing is returned but files on disk are edited.</p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>These functions wrap around <code>pkgdown</code> and make html substitutions to customize the <code>rtrek</code> package website.
+These functions should only be called when working on the <code>rtrek</code> package with that package root directory as the working directory.</p>
+    
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='fu'>build_site</span>()
+<span class='co'># }</span></pre>
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <div id="tocnav">
-      <h2>Contents</h2>
-      <ul class="nav nav-pills nav-stacked">
-        <li><a href="#trekdata-0-1-0">0.1.0</a></li>
-        <li><a href="#trekdata-0-0-0-9000">0.0.0.9000</a></li>
-      </ul>
-    </div>
-  </div>
+    <h2>Contents</h2>
+    <ul class="nav nav-pills nav-stacked">
+      <li><a href="#arguments">Arguments</a></li>
+      
+      <li><a href="#value">Value</a></li>
 
+      <li><a href="#details">Details</a></li>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
+
+  </div>
 </div>
 
       <footer>
