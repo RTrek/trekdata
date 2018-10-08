@@ -190,8 +190,8 @@ update_local_tweets <- function(users, file, n = 3200){
   last <- vector("list", length(users))
   names(last) <- users
   if(!is.null(d)){
-    x <- dplyr::group_by(d, screen_name) %>% dplyr::summarise(status_id = status_id[1]) %>%
-      dplyr::slice(match(users, screen_name))
+    x <- dplyr::group_by(d, .data[["screen_name"]]) %>% dplyr::summarise(status_id = .data[["status_id"]][1]) %>%
+      dplyr::slice(match(users, .data[["screen_name"]]))
     for(i in seq_along(x$screen_name)) last[[x$screen_name[i]]] <- x$status_id[i]
   }
   d2 <- purrr::map2(users, last, ~rtweet::get_timeline(.x, n = n, since_id = .y)) %>% dplyr::bind_rows()
@@ -227,5 +227,5 @@ tame_tweets <- function(x, accounts = "RikerGoogling"){
     }
     purrr::map_lgl(text, ~.inner(.x, stopwords))
   }
-  dplyr::filter(x, !(.data[["screen_name"]] %in% accounts) | f(text, stopwords))
+  dplyr::filter(x, !(.data[["screen_name"]] %in% accounts) | f(.data[["text"]], stopwords))
 }
