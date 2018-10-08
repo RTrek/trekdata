@@ -89,8 +89,16 @@ tl_entries <- function(x, step = 1){
   x
 }
 
+.tl_fix_warstories <- function(d){
+  idx <- which(grepl("DUOLOGY", d$section))
+  d$section[idx] <- gsub("DUOLOGY: 21, 22\\)FN_453; ", "Duology: Book 21, 22; ", d$section[idx])
+  d
+}
+
 .tl_move_linebreak <- function(x){
-  fixes <- c("NOVELIZATION\\)178", "^     \\d+\\.\\d$", "^     \\d+-", "^\\s+\\([A-Z0-9 #]+\\)($|FN| -- )")
+  fixes <- c("NOVELIZATION\\)178", "^     \\d+\\.\\d$",
+             "^     \\d+-", "^\\s+\\([A-Z0-9 #]+\\)($|FN| -- )", "^     NOVELIZATION)$",
+             "^     \\d+\u00A7", "^      THY FATHER \\(TLE\\)$")
   idx <- grep(paste0(c("^     ([A-Za-z ]+\"-|\\d+, ).*", fixes), collapse = "|"), x)
   while(length(idx)){
     y <- gsub("^-", "", trimws(x[idx[1]]))
@@ -180,7 +188,7 @@ tl_entries <- function(x, step = 1){
   lapply(y, as.numeric)
 }
 
-.tl_detailed_date <- function(x){
+.tl_detailed_date <- function(x, year){
   idx <- grepl("^\\{(.*)\\} .*", x)
   stardate_idx <- grepl("^\\{STARDATE.*\\} .*", x)
   idx <- which(idx & !stardate_idx)
@@ -190,7 +198,12 @@ tl_entries <- function(x, step = 1){
   idx <- grep(pat, x)
   if(length(idx)) y[idx] <- gsub(pat, "\\2\\3\\4\\5", x[idx])
   y <- gsub("(.*), STARDATES.*", "\\1", y)
-  .tl_title_case(y)
+  y <- .tl_title_case(y)
+  idx <- which(is.na(y) & !is.na(year))
+  if(length(idx)){
+    y[idx] <- year
+  }
+  y
 }
 
 .tl_strip_detailed_date <- function(x){
@@ -264,11 +277,15 @@ tl_abb <- function(){
 }
 
 .tl_title_case <- function(x){
-  x <- gsub("(^|-|\\.\\.\\.|[[:space:]])([[:alpha:]])([[:alpha:]]+)", "\\1\\2\\L\\3", x, perl = TRUE)
+  x <- gsub("(^|-|\\.\\.\\.|[[:space:]])([[:alpha:]]'?)([[:alpha:]]+)", "\\1\\2\\L\\3", x, perl = TRUE)
   x <- gsub("(')([[:alpha:]])( |$)", "\\1\\L\\2\\3", x, perl = TRUE)
   pat <- "(.*[^:] )(A|The|An|And|As|Is|To|For|From|Of|In|On)( .*)"
   x <- gsub(pat, "\\1\\L\\2\\E\\3", x, perl = TRUE)
   x <- gsub(pat, "\\1\\L\\2\\E\\3", x, perl = TRUE)
+  x <- gsub("'TIL", "'til", x)
+  x <- gsub("Ar-558", "AR-558", x)
+  x <- gsub("4:...Sacrifice", "4: Sacrifice", x)
+  x <- gsub("2: Call to Arms...", "2: Call to Arms", x)
   x
 }
 
@@ -292,17 +309,72 @@ tl_abb <- function(){
   as.numeric(x)
 }
 
+.tl_year_detailed <- function(x){
+  y <- grepl("C\\.|,|BILLION| AD$| BC$", x)
+  if(!y) return(NA)
+  y <- gsub("^C\\.", "~", x)
+  y <- tolower(y)
+  y <- gsub("( ad$| bc$)", "\\U\\1", y, perl = TRUE)
+  y
+}
+
+.tl_unneeded_quotes <- function(x){
+  f <- function(x) length(which(strsplit(x, "")[[1]] == "\""))
+  f2 <- function(x){
+    nc <- nchar(x)
+    substr(x, 1, 1) == "\"" & substr(x, nc, nc) == "\""
+  }
+  n <- sapply(x, f)
+  quoted <- sapply(x, f2)
+  idx <- which(n == 2 & quoted)
+  if(length(idx)){
+    x[idx] <- gsub("\"", "", x[idx])
+  }
+  if(any(n == 1)){
+    x[n == 1] <- gsub("\"", "", x[n == 1])
+  }
+  x
+}
+
+.tl_cleanup <- function(x){
+  x <- gsub("(CHAPTER|CHAPTERS|Chapter|Chapters|chapter|chapters)", "Ch", x)
+  x <- gsub("(.*)( )(:|;|\\.|,)(.*)", "\\1\\3\\4", x)
+  x <- gsub(" (P|p)arts? (\\d)", " Part \\2", x)
+  x <- gsub(", (Book|Part) ", " \\1 ", x)
+  x <- gsub("Book One", "Book 1", x)
+  x <- gsub("Book Two", "Book 2", x)
+  x <- gsub("Book Three", "Book 3", x)
+  x <- gsub("1 and Two", "1 and 2", x)
+  x <- gsub("#(\\d)", "\\1", x)
+  x <- gsub("Section31", "Section 31", x)
+  x <- gsub("\u00A7\u00A7?", " Section ", x)
+  x <- gsub("(S|s)ections?( \\d)", " Section \\2", x)
+  x <- gsub("U\\.S\\.S\\.", "USS", x)
+  x <- gsub("\"Seventy Years Ago,\"", "Seventy Years Ago,", x)
+  x <- gsub("\\s+", " ", trimws(x))
+  idx <- grep("^(\\d+|One) Years? Ago$", x)
+  if(length(idx)) x[idx] <- NA
+  x
+}
+
+.tl_section_to_date <- function(x, y){
+  idx <- which(grepl("^\"(\\d+|One) Years? Ago\"$", y) & is.na(x))
+  #print(idx)
+  if(length(idx)) x[idx] <- tolower(gsub("\"", "", gsub("One", "1", y[idx])))
+  x
+}
+
 tl_clean_entry <- function(x, step = 1){ # MUST ADD CIRCA/YEARS AGO TO DETAILED DATE COLUMN
   x <- gsub("; ", ", ", x)
   x <- gsub("\"A &\\s(\"|)", "\"A AND\"", x)
   if(length(grep("K$", x))) x0 <<- x
-  x <- .tl_fix_kobayashi(x)
-  x <- .tl_move_linebreak(x)
+  x <- .tl_fix_kobayashi(x) %>% .tl_move_linebreak()
   x <- x[!grepl("^(\\s+|)$", x)] %>% .tl_move_footnote() %>% .tl_move_bullets() %>%
     .tl_move_indented() %>% .tl_move_dashed() #%>%
   x <- gsub("\\(VGR-YA #2216", "\\(VGR-YA #2\\)216", x) # fix
   x <- gsub("\\s+", " ", trimws(x))
   year <- .tl_year(x[1])
+  year_detailed_date <- .tl_year_detailed(x[1])
   x <- x[-1]
   if(!length(x)) return()
   stardate <- .tl_stardate(x)
@@ -315,9 +387,14 @@ tl_clean_entry <- function(x, step = 1){ # MUST ADD CIRCA/YEARS AGO TO DETAILED 
                          setting = .tl_setting(x),
                          stardate_start = stardate[[1]],
                          stardate_end = stardate[[2]],
-                         detailed_date = .tl_detailed_date(x),
+                         detailed_date = .tl_detailed_date(x, year_detailed_date),
                          section = .tl_section(x),
                          primary_entry_year = .tl_primary_entry(x),
                          footnote = .tl_footnote_number(x))
-  dplyr::mutate(d, title = .tl_title(.data[["title"]]))
+  d <- dplyr::mutate(d, title = .tl_title(.data[["title"]]))
+  d <- dplyr::mutate(d, title = .tl_cleanup(.data[["title"]]),
+                     detailed_date = .tl_section_to_date(.data[["detailed_date"]], .data[["section"]]),
+                     section = .tl_cleanup(.tl_unneeded_quotes(.data[["section"]])))
+  d <- .tl_fix_warstories(d)
+  d
 }
