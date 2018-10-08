@@ -13,6 +13,16 @@ reference:
 - title: Package
   contents:
   - trekdata
+- title: rtrek data prep
+  contents:
+  - update_local_tweets
+  - tame_tweets
+  - tl_clean_text
+  - tl_entries
+  - tl_footnotes
+- title: rtrek website helpers
+  contents:
+  - build_site
 
 navbar:
   type: inverse
