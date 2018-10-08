@@ -76,7 +76,7 @@
     '<div class="main-container">\n  <div class="parallax">\n    ',
     '<a href="https://github.com/leonawicz/rtrek/">\n      ',
     '<h1 class="parallax-title"><span style="padding-right: 50px;">Stellar Cartography</span></h1>',
-    '<h1 class="parallax-subtitle"><span style="padding-right: 50px;">Matthew Leonawicz ◆ R Developer</span></h1>',
+    '<h1 class="parallax-subtitle"><span style="padding-right: 50px;">Matthew Leonawicz ', '\u25C6', ' R Developer</span></h1>',
     '<img class="parallax-image" ',
     'src="https://raw.githubusercontent.com/leonawicz/rtrek/master/data-raw/images/rtrek-small.png">',
     '\n    </a>\n  </div>\n</div>')
@@ -91,7 +91,7 @@
     '<div class="main-container">\n  <div class="parallax">\n    ',
     '<a href="https://github.com/leonawicz/rtrek/">\n      ',
     '<h1 class="parallax-title"><span style="padding-right: 50px;">Ten Forward</span></h1>',
-    '<h1 class="parallax-subtitle"><span style="padding-right: 50px;">Matthew Leonawicz ◆ R Developer</span></h1>',
+    '<h1 class="parallax-subtitle"><span style="padding-right: 50px;">Matthew Leonawicz ', '\u25C6', ' R Developer</span></h1>',
     '<img class="parallax-image" ',
     'src="https://raw.githubusercontent.com/leonawicz/rtrek/master/data-raw/images/rtrek-small.png">',
     '\n    </a>\n  </div>\n\n')
