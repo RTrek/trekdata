@@ -1,4 +1,15 @@
-tl_entries <- function(x, step = 1){
+#' Timeline Entries Data Frame
+#'
+#' Create the timeline entries data frame.
+#'
+#' @param x character.
+#'
+#' @return a data frame
+#' @export
+#'
+#' @examples
+#' \dontrun{tl_entries(x)}
+tl_entries <- function(x){
   x <- tl_filter_lines(x)
   x <- split(x, cumsum(
     (!grepl("\u00A7|\\(|;|\"|\\d\\.\\d", x) & grepl("^     (\\d|C\\.\\d|C\\. \\d)", x)) |
@@ -9,7 +20,7 @@ tl_entries <- function(x, step = 1){
       return(c(strsplit(.x[1], " -- ")[[1]], .x[-1]))
     } else .x
   })
-  purrr::map(x, tl_clean_entry, step = step)
+  purrr::map(x, tl_clean_entry)
 }
 
 .tl_move_footnote <- function(x){
@@ -194,7 +205,8 @@ tl_entries <- function(x, step = 1){
   idx <- which(idx & !stardate_idx)
   y <- rep(NA, length(x))
   if(length(idx)) y[idx] <- gsub("^\\{(.*)\\} .*", "\\1", x[idx])
-  pat <- paste0(".*([A-Za-z]\"-)(", paste(month.name, collapse = "|"), ")(| \\d\\d?| \\d\\d?-\\d\\d?)($|,? )(\\d\\d\\d\\d).*")
+  pat <- paste0(".*([A-Za-z]\"-)(", paste(month.name, collapse = "|"),
+                ")(| \\d\\d?| \\d\\d?-\\d\\d?)($|,? )(\\d\\d\\d\\d).*")
   idx <- grep(pat, x)
   if(length(idx)) y[idx] <- gsub(pat, "\\2\\3\\4\\5", x[idx])
   y <- gsub("(.*), STARDATES.*", "\\1", y)
@@ -359,15 +371,13 @@ tl_abb <- function(){
 
 .tl_section_to_date <- function(x, y){
   idx <- which(grepl("^\"(\\d+|One) Years? Ago\"$", y) & is.na(x))
-  #print(idx)
   if(length(idx)) x[idx] <- tolower(gsub("\"", "", gsub("One", "1", y[idx])))
   x
 }
 
-tl_clean_entry <- function(x, step = 1){ # MUST ADD CIRCA/YEARS AGO TO DETAILED DATE COLUMN
+tl_clean_entry <- function(x){
   x <- gsub("; ", ", ", x)
   x <- gsub("\"A &\\s(\"|)", "\"A AND\"", x)
-  if(length(grep("K$", x))) x0 <<- x
   x <- .tl_fix_kobayashi(x) %>% .tl_move_linebreak()
   x <- x[!grepl("^(\\s+|)$", x)] %>% .tl_move_footnote() %>% .tl_move_bullets() %>%
     .tl_move_indented() %>% .tl_move_dashed() #%>%

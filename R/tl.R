@@ -1,3 +1,15 @@
+#' Initial Timeline Text Cleaning
+#'
+#' First pass of text cleaning after reading file containing timeline entries.
+#'
+#' @param x character.
+#' @param fix special fix for two footnote entries, no need to change.
+#'
+#' @return character
+#' @export
+#'
+#' @examples
+#' \dontrun{tl_clean_text(x)}
 tl_clean_text <- function(x, fix = c(151, 300)){
   x <- gsub("\u2010|\u2011|\u2012|\u2013|\u2014|\u2015", "-", x)
   x <- gsub("\u2018|\u2019", "'", x)
@@ -40,6 +52,18 @@ tl_footnote_index <- function(x){
   grep("^    \\d+\\s(\\w|\"|\\.)", x)
 }
 
+#' Timeline Footnotes Data Frame
+#'
+#' Create the timeline footnotes data frame.
+#'
+#' @param x character.
+#' @param ibid logical, leave Ibid entries as is.
+#'
+#' @return a data frame
+#' @export
+#'
+#' @examples
+#' \dontrun{tl_footnotes(x)}
 tl_footnotes <- function(x, ibid = FALSE){
   idx <- tl_footnote_index(x)
   x <- x[idx]
