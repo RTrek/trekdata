@@ -7,8 +7,16 @@ tl_clean_text <- function(x, fix = c(151, 300)){
   x <- gsub("TFTCT", "CT", x)
   x <- gsub("([A-Za-z])\\(", "\\1 \\(", x)
   x <- gsub("TOS #78\\)", "\\(TOS #78\\)", x)
-  x <- gsub("Section31", "Section 31", x)
   x <- x[-grep("^\\s+-Episodes \\(not", x)]
+  x <- gsub("(^.*)(VIII)(.*)", "\\18\\3", x)
+  x <- gsub("(^.*)(III)(.*)", "\\13\\3", x)
+  x <- gsub("(^.*)(VII)(.*)", "\\17\\3", x)
+  x <- gsub("(^.*)( II)(.*)", "\\1 2\\3", x)
+  x <- gsub("(^.*)( IX)(.*)", "\\1 9\\3", x)
+  x <- gsub("(^.*)( VI)(\\)| |:|$|\"|-)", "\\1 6\\3", x)
+  x <- gsub("(^.*)( V)(\\)| |:|\"|-)", "\\1 5\\3", x)
+  x <- gsub("(^.*)( IV)(\\)| |:|$|\"|-)", "\\1 4\\3", x)
+  x <- gsub("(^.*)(PART|PARTS|Part|Parts|part|parts)( I)($|:| |-|\"|\\))", "\\1\\2 1\\4", x)
   idx <- sapply(fix, function(i) grep(paste0("^      ", i, " Story "), x))
   x[idx] <- gsub("      ", "    ", x[idx])
   x
