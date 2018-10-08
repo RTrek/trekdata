@@ -23,5 +23,7 @@ VignetteBuilder: knitr
 Imports: 
     magrittr,
     dplyr,
-    purrr
+    purrr,
+    rtweet,
+    pkgdown
 RoxygenNote: 6.1.0
