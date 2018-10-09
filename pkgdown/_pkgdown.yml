@@ -20,6 +20,9 @@ reference:
   - tl_clean_text
   - tl_entries
   - tl_footnotes
+  - st_book_copy
+  - st_epub
+  - st_epub_test
 - title: rtrek website helpers
   contents:
   - build_site

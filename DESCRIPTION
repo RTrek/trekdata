@@ -25,5 +25,9 @@ Imports:
     dplyr,
     purrr,
     rtweet,
-    pkgdown
+    pkgdown,
+    tm,
+    epubr,
+    stringr,
+    tidyr
 RoxygenNote: 6.1.0
