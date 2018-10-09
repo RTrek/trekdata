@@ -169,9 +169,14 @@ clean_book_text <- function(x){
 #'
 #' @examples
 #' \dontrun{st_epub(file)}
-st_epub <- function(file, fields = .st_fields, chapter_pattern = .st_pat, add_pattern = .st_pat_list(),
-                    cleaner = clean_book_text, drop_sections = .st_sec_drop, series = TRUE, fix_date = TRUE,
+st_epub <- function(file, fields = NULL, chapter_pattern = NULL, add_pattern = NULL,
+                    cleaner = NULL, drop_sections = NULL, series = TRUE, fix_date = TRUE,
                     fix_text = TRUE, dedication = TRUE, hist_note = TRUE){
+  if(is.null(fields)) fields <- .st_fields
+  if(is.null(chapter_pattern)) chapter_pattern <- .st_pat
+  if(is.null(add_pattern)) add_pattern <- .st_pat_list()
+  if(is.null(cleaner)) cleaner <- clean_book_text
+  if(is.null(drop_sections)) drop_sections <- .st_sec_drop
   d <- epubr::epub(file, fields = fields, drop_sections = drop_sections, chapter_pattern = chapter_pattern,
                    add_pattern = add_pattern, series = series, dedication = dedication, hist_note = hist_note)
   if(fix_date) d <- st_fix_date(d)

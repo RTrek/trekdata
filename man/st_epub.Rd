@@ -4,10 +4,10 @@
 \alias{st_epub}
 \title{Read Star Trek epub files}
 \usage{
-st_epub(file, fields = .st_fields, chapter_pattern = .st_pat,
-  add_pattern = .st_pat_list(), cleaner = clean_book_text,
-  drop_sections = .st_sec_drop, series = TRUE, fix_date = TRUE,
-  fix_text = TRUE, dedication = TRUE, hist_note = TRUE)
+st_epub(file, fields = NULL, chapter_pattern = NULL,
+  add_pattern = NULL, cleaner = NULL, drop_sections = NULL,
+  series = TRUE, fix_date = TRUE, fix_text = TRUE,
+  dedication = TRUE, hist_note = TRUE)
 }
 \arguments{
 \item{file}{character.}
