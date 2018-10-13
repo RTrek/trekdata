@@ -75,15 +75,31 @@ st_fix_date <- function(x){
 }
 
 st_fix_case <- function(x){
-  f <- function(x){
+  f <- function(x, authors = FALSE){
     x[!is.na(x)] <- tools::toTitleCase(tolower(x[!is.na(x)]))
     x <- gsub(" & ", " and ", x)
+    if(authors){
+      x <- gsub("( [a-z]) ", " \\U\\1\\. ", x, perl = TRUE)
+      x <- gsub("(^[A-Za-z]) ", "\\U\\1\\. ", x, perl = TRUE)
+      x <- gsub("( Ii+)( |$)", "\\U\\1\\2", x, perl = TRUE)
+    }
+    x <- gsub("\\s+", " ", x)
     paste0(toupper(substr(x, 1, 1)), substring(x, 2))
   }
   if("title" %in% names(x)) x <- dplyr::mutate(x, title = f(.data[["title"]]))
-  if("creator" %in% names(x)) x <- dplyr::mutate(x, creator = f(.data[["creator"]]))
+  if("creator" %in% names(x)) x <- dplyr::mutate(x, creator = f(.data[["creator"]], authors = TRUE))
   if("publisher" %in% names(x)) x <- dplyr::mutate(x, publisher = f(.data[["publisher"]]))
   x
+}
+
+st_fix_bantam <- function(x){
+  a <- c("Bantam Episodes", "Bantam Novels")
+  d <- dplyr::mutate(x, subseries = dplyr::case_when(
+    grepl(a[1], .data[["subseries"]]) ~ a[1],
+    grepl(a[2], .data[["subseries"]]) ~ a[2],
+    TRUE ~ .data[["subseries"]]
+  ))
+  d
 }
 
 st_title_sub <- function(x, keep_roman = FALSE){
@@ -110,6 +126,8 @@ st_title_sub <- function(x, keep_roman = FALSE){
     x <- gsub("^Deep Space Nine(:\\s|\\s)", "DS9: ", x)
     x <- gsub("^Voyager(:\\s|\\s)", "VOY: ", x)
     x <- gsub("Volume", "Vol", x)
+    x <- gsub(": - ", " ", x)
+    x <- gsub("s - \\d(\\d\\d) - ", "s \\1: ", x)
     roman_subs <- purrr::map(1:11, ~{
       paste0("(", paste(strsplit(as.character(as.roman(2:12)), "")[[.x]],
                         strsplit(tolower(as.character(as.roman(2:12))), "")[[.x]], sep = "|"), ")", collapse = "")
@@ -134,6 +152,7 @@ st_pub_sub <- function(x){
     x[stringr::str_detect(x, "Schuster|S and s")] <- "Simon and Schuster"
     x[stringr::str_detect(x, "Martin")] <- "St. Martin's Press"
     x[stringr::str_detect(x, "Titan")] <- "Titan Books"
+    x[stringr::str_detect(x, "^Bantam$")] <- "Bantam Books"
     x
   }
   if("publisher" %in% names(x)) x <- dplyr::mutate(x, publisher = f(.data[["publisher"]]))
@@ -180,6 +199,7 @@ st_epub <- function(file, fields = NULL, chapter_pattern = NULL, add_pattern = N
   d <- epubr::epub(file, fields = fields, drop_sections = drop_sections, chapter_pattern = chapter_pattern,
                    add_pattern = add_pattern, series = series, dedication = dedication, hist_note = hist_note)
   if(fix_date) d <- st_fix_date(d)
+  d <- st_fix_bantam(d)
   if(fix_text){
     d <- st_fix_case(d)
     d <- st_title_sub(d) %>% st_author_sub() %>% st_pub_sub()
