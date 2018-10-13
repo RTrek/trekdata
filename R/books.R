@@ -112,7 +112,7 @@ st_fix_case <- function(x){
 }
 
 st_fix_bantam <- function(x){
-  a <- c("Bantam Episodes", "Bantam Novels")
+  a <- c("Bantam Episodes", "Bantam Novels") # nolint
   d <- dplyr::mutate(x, subseries = dplyr::case_when(
     grepl(a[1], .data[["subseries"]]) ~ a[1],
     grepl(a[2], .data[["subseries"]]) ~ a[2],
