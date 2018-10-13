@@ -6,8 +6,7 @@
 \usage{
 st_epub(file, fields = NULL, chapter_pattern = NULL,
   add_pattern = NULL, cleaner = NULL, drop_sections = NULL,
-  series = TRUE, fix_date = TRUE, fix_text = TRUE,
-  dedication = TRUE, hist_note = TRUE)
+  fix_date = TRUE, fix_text = TRUE)
 }
 \arguments{
 \item{file}{character.}
@@ -22,15 +21,9 @@ st_epub(file, fields = NULL, chapter_pattern = NULL,
 
 \item{drop_sections}{character.}
 
-\item{series}{logical.}
-
 \item{fix_date}{logical.}
 
 \item{fix_text}{logical.}
-
-\item{dedication}{logical.}
-
-\item{hist_note}{logical.}
 }
 \value{
 a data frame
