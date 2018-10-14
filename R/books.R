@@ -113,12 +113,17 @@ st_fix_case <- function(x){
 
 st_fix_bantam <- function(x){
   a <- c("Bantam Episodes", "Bantam Novels") # nolint
-  d <- dplyr::mutate(x, subseries = dplyr::case_when(
+  dplyr::mutate(x, subseries = dplyr::case_when(
     grepl(a[1], .data[["subseries"]]) ~ a[1],
     grepl(a[2], .data[["subseries"]]) ~ a[2],
-    TRUE ~ .data[["subseries"]]
-  ))
-  d
+    TRUE ~ .data[["subseries"]]))
+}
+
+st_fix_nchap <- function(x){
+  dplyr::mutate(x, nchap = ifelse(.data[["nchap"]] == 0 |
+                                    grepl("Bantam Episodes", .data[["subseries"]]) |
+                                    (grepl("Bantam Novels", .data[["subseries"]]) & .data[["nchap"]] < 10),
+                                  as.integer(NA), .data[["nchap"]]))
 }
 
 st_title_sub <- function(x, keep_roman = FALSE){
@@ -216,6 +221,7 @@ st_epub <- function(file, fields = NULL, chapter_pattern = NULL, add_pattern = N
   d <- st_add_series(d, file) %>% st_add_dedication()
   if(fix_date) d <- st_fix_date(d)
   d <- st_fix_bantam(d)
+  d <- st_fix_nchap(d)
   if(fix_text){
     d <- st_fix_case(d)
     d <- st_title_sub(d) %>% st_author_sub() %>% st_pub_sub()
