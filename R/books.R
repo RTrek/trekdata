@@ -22,9 +22,9 @@ st_book_copy <- function(in_dir, out_dir){
     updated_trimmed <- gsub(pat, "", updated) # updated novels, pattern removed
     idx_replaced <- which(gsub(pat2, "", files) %in% updated_trimmed) # which previous edition novels have an updated edition available
     files <- files[-idx_replaced] # all novels minus the previous editions for which an update is in the list
-    out <- file.path(out_dir, gsub(in_dir, "", files))
-    out <- gsub(paste0(pat, "|", pat2, "|,"), "", out)
-    out <- stringr::str_replace(out, "([\\w|' ]+)/\\1", "\\1")
+    out <- file.path(out_dir, gsub(paste0(in_dir, "/"), "", files))
+    out <- gsub(paste0(pat, "|", pat2, "| UNFORMATTED"), "", out)
+    out <- paste0(dirname(out), ".epub")
     purrr::walk(dirname(out), ~dir.create(.x, showWarnings = FALSE, recursive = TRUE))
     file.copy(files, out)
     cat("Files copied.\n")
@@ -66,7 +66,9 @@ st_book_copy <- function(in_dir, out_dir){
   x <- strsplit(dirname(x), "/")
   idx <- purrr::map_dbl(x, ~(which(.x == parent_dir) + 1))
   if(subseries) idx <- idx + 1
-  purrr::map_chr(seq_along(x), ~x[[.x]][idx[.x]])
+  x <- purrr::map_chr(seq_along(x), ~x[[.x]][idx[.x]])
+  x[x == "All-Series_Crossover"] <- "All-Series/Crossover"
+  x
 }
 
 st_add_series <- function(d, files){
@@ -103,6 +105,8 @@ st_fix_case <- function(x){
       x <- gsub("( Ii+)( |$)", "\\U\\1\\2", x, perl = TRUE)
     }
     x <- gsub("\\s+", " ", x)
+    x <- gsub("( Vi$| Vii$| Viii$)", "\\U\\1", x, perl = TRUE)
+    x <- gsub("( Ii$| Iii$| X$)", "\\U\\1", x, perl = TRUE)
     paste0(toupper(substr(x, 1, 1)), substring(x, 2))
   }
   if("title" %in% names(x)) x <- dplyr::mutate(x, title = f(.data[["title"]]))
@@ -126,8 +130,43 @@ st_fix_nchap <- function(x){
                                   as.integer(NA), .data[["nchap"]]))
 }
 
-st_title_sub <- function(x, keep_roman = FALSE){
+.st_title_from_file <- function(x){
+  files <- gsub("\\.epub$", "", x[["file"]])
+  x$title <- purrr::map_chr(files, ~paste0(strsplit(.x, " - ")[[1]][-1], collapse = ": "))
+  x
+}
+
+.st_series_from_file <- function(x){
+  x$series_abb <- purrr::map_chr(x[["file"]], ~{
+    gsub("\\d+ ([A-Z]+|[A-Z]+-[A-Z]+).*", "\\1", strsplit(.x, " - ")[[1]][1])
+  })
+  x
+}
+
+.st_number_from_file <- function(x){
+  x$number <- purrr::map_int(x[["file"]], ~{
+    a1 <- strsplit(.x, " - ")[[1]][1]
+    a2 <- gsub("^\\d+ ([A-Z29]+|[A-Z29]+-[A-Z29]+) (\\d+)", "\\2", a1)
+    if(a1 == a2) a2 <- as.integer(NA)
+    as.integer(a2)
+  })
+  x
+}
+
+st_title_update <- function(x, use_filename = TRUE){
+  if(use_filename) .st_title_from_file(x) else st_title_sub_specific(st_title_sub(x))
+}
+
+st_series_update <- function(x){
+  .st_series_from_file(x) %>% .st_number_from_file()
+}
+
+st_title_sub <- function(x){
   f <- function(x){
+    x <- gsub("^Star Trek: ", "", x)
+    x <- gsub("Typhon Pact ", "Typhon Pact: ", x)
+    x <- gsub("^Shadow$", "Section 31: Shadow", x)
+    x <- gsub("(^[A-Za-z]+): (Section 31)$", "\\2: \\1", x)
     x <- gsub("of\\sTwo", "of 2", x)
     x <- gsub("of\\sThree", "of 3", x)
     x <- gsub("Treck", "Trek", x)
@@ -149,18 +188,99 @@ st_title_sub <- function(x, keep_roman = FALSE){
     x <- gsub("^The Next Generation(:\\s|\\s)", "TNG: ", x)
     x <- gsub("^Deep Space Nine(:\\s|\\s)", "DS9: ", x)
     x <- gsub("^Voyager(:\\s|\\s)", "VOY: ", x)
+    x <- gsub("^Dti: ", "Department of Temporal Investigations: ", x)
     x <- gsub("Volume", "Vol", x)
     x <- gsub(": - ", " ", x)
     x <- gsub("s - \\d(\\d\\d) - ", "s \\1: ", x)
-    roman_subs <- purrr::map(1:11, ~{
-      paste0("(", paste(strsplit(as.character(as.roman(2:12)), "")[[.x]],
-                        strsplit(tolower(as.character(as.roman(2:12))), "")[[.x]], sep = "|"), ")", collapse = "")
-    })
-    p <- if(keep_roman) rep("\\U\\1\\2", 11) else 2:12
-    for(i in seq_along(roman_subs)) x <- gsub(paste0(roman_subs[[i]], "(\\s|:|$)"), p[i], x, perl = TRUE)
-    x
+    x <- romans_sub(x)
+    x <- gsub("( V$)", " 5", x)
+    x <- gsub("( X$)", " 10", x)
+    x <- gsub("Terok nor", "Terok Nor", x)
   }
   if("title" %in% names(x)) x <- dplyr::mutate(x, title = f(.data[["title"]]))
+  x[["title"]] <- gsub("^Star Trek: ", "", x[["title"]])
+  x
+}
+
+st_title_sub_specific <- function(x){
+  x <- dplyr::mutate(x, title = dplyr::case_when(
+    .data[["title"]] == "To Reign in Hell" &
+      .data[["date"]] == "2005-01-04" ~ "To Reign in Hell To Reign in Hell: The Exile of Khan Noonien Singh",
+    .data[["title"]] == "Epiphany" & .data[["date"]] == "2007-04-17" ~ "Vulcan's Soul 3: Epiphany",
+    .data[["title"]] == "The Fifty-Year Mission" & .data[["date"]] == "2016-08-30" ~
+      "The Fifty-Year Mission: The Complete, Uncensored, Unauthorized Oral History of Star Trek Vol 2",
+    .data[["title"]] == "The Definitive Star Trek Trivia Book" & .data[["date"]] == "2000-04-01" ~
+      "The Definitive Star Trek Trivia Book 1",
+    .data[["title"]] == "The Definitive Star Trek Trivia Book" & .data[["date"]] == "2001-04-03" ~
+      "The Definitive Star Trek Trivia Book 2",
+    .data[["date"]] == "1998-07-01" & grepl("Strange", .data[["title"]]) ~ "Strange New Worlds 1",
+    .data[["date"]] == "2001-05-01" & grepl("Strange", .data[["title"]]) ~ "Strange New Worlds 4",
+    .data[["date"]] == "1989-10-01" & grepl("Lost", .data[["title"]]) ~ "The Lost Years",
+    .data[["date"]] == "1992-01-01" & grepl("Undiscovered", .data[["title"]]) ~ "Star Trek 6: The Undiscovered Country",
+    .data[["date"]] == "1997-06-01" & grepl("Mind", .data[["title"]]) ~ "Mind Meld",
+    .data[["date"]] == "2008-12-30" & grepl("Sacrifices of War", .data[["title"]]) ~ "Errand of Fury 3: Sacrifices of War",
+    .data[["date"]] == "2011-07-26" & grepl("Cast", .data[["title"]]) ~ "Cast No Shadow",
+    .data[["date"]] == "1991-11-01" & grepl("Reuinion", .data[["title"]]) ~ "Reunion",
+    .data[["date"]] == "1994-12-01" & grepl("Generations", .data[["title"]]) ~ "Star Trek: Generations",
+    .data[["date"]] == "1996-12-01" & grepl("Contact", .data[["title"]]) ~ "Star Trek: First Contact",
+    .data[["date"]] == "1998-11-01" & grepl("Insurrection", .data[["title"]]) ~ "Star Trek: Insurrection",
+    .data[["date"]] == "2011-03-29" & grepl("Generation", .data[["title"]]) ~ "Indistinguishable from Magic",
+    .data[["date"]] == "2009-08-25" & grepl("Deep Space Nine", .data[["title"]]) ~ "The Never-Ending Sacrifice",
+    .data[["date"]] == "1996-04-01" & grepl("Ghost of a Chance", .data[["title"]]) ~ "Ghost of a Chance",
+    .data[["date"]] == "1996-07-01" & grepl("Invasion", .data[["title"]]) ~ "Invasion 4 - The Final Fury",
+    .data[["date"]] == "1996-10-01" & grepl("Mosaic", .data[["title"]]) ~ "Mosaic",
+    .data[["date"]] == "1997-12-01" & grepl("Voyager", .data[["title"]]) ~ "Marooned",
+    .data[["date"]] == "1998-09-01" & grepl("Voyager", .data[["title"]]) ~ "Seven of Nine",
+    .data[["date"]] == "1999-10-01 " & grepl("Voyager", .data[["title"]]) ~ "Equinox",
+    .data[["date"]] == "2009-09-29" & grepl("Voyager", .data[["title"]]) ~ "Unworthy",
+    .data[["date"]] == "2011-10-25" & grepl("Romulan", .data[["title"]]) ~ "The Romulan War: To Brave the Storm",
+    .data[["date"]] == "2009-10-27" & grepl("Titan", .data[["title"]]) ~ "Synthesis",
+    .data[["date"]] == "1998-02-01" & grepl("Frontier", .data[["title"]]) ~ "New Frontier (Omnibus)",
+    .data[["date"]] == "2001-09-26" & grepl("Invincible", .data[["title"]]) ~ "SCE: Invincible 2",
+    .data[["date"]] == "2004-09-15" & grepl("44", .data[["title"]]) ~ "SCE 44: Where Time Stands Still",
+    .data[["date"]] == "2007-07-01" & grepl("Ghost", .data[["title"]]) ~ "Corps of Engineers: Ghost",
+    .data[["date"]] == "2017-11-28" & grepl("Fire", .data[["title"]]) ~ "Prometheus: Fire with Fire",
+    .data[["date"]] == "2000-03-01" & grepl("S9", .data[["title"]]) ~ "The Captain's Table 1-6 (Omnibus)",
+    .data[["date"]] == "1997" & .data[["title"]] == "Star Trek Day of Honor" ~ "Day of Honor (Omnibus)",
+    .data[["date"]] == "2009-12-29" & grepl("Universe", .data[["title"]]) ~ "Mirror Universe: The Sorrows of Empire",
+    .data[["date"]] == "2009-01-27" & grepl("Destiny", .data[["title"]]) ~ "Destiny: A Singular Destiny",
+    .data[["date"]] == "2013-05-21" & grepl("Darkness", .data[["title"]]) ~ "Star Trek: Into Darkness",
+    .data[["date"]] == "1997-09-01" & grepl("Traveler", .data[["title"]]) ~ "Klingon for the Galactic Traveler",
+    .data[["date"]] == "2003-01-07" & grepl("Companion", .data[["title"]]) ~ "The Next Generation Companion",
+    .data[["date"]] == "2012-04-03" & grepl("CookBook", .data[["title"]]) ~ "Star Trek Cookbook",
+    .data[["date"]] == "2012-10-01" & grepl("365", .data[["title"]]) ~ "Star Trek The Next Generation 365",
+    .data[["date"]] == "2010-03-30" & grepl("Online", .data[["title"]]) ~ "Star Trek Online: The Needs of the Many",
+    .data[["date"]] == "1999-11-01" & .data[["title"]] == "Star Trek" ~ "New Worlds New Civilizations",
+    .data[["date"]] == "2000-02-01" & grepl("Hamlet", .data[["title"]]) ~ "The Klingon Hamlet",
+    .data[["date"]] == "2010-03-16" & grepl("Seven", .data[["title"]]) ~ "Seven Deadly Sins",
+    .data[["date"]] == "1998-10-01" & grepl("^The Dominion War$", .data[["title"]]) ~ "The Dominion War 2: Call to Arms",
+    .data[["date"]] == "1998-10-01" & grepl("Behind Enemy Lines", .data[["title"]]) ~ "The Dominion War 1: Behind Enemy Lines",
+    .data[["date"]] == "1998-11-01" & grepl("Tunnel", .data[["title"]]) ~ "The Dominion War 3: Tunnel Through the Stars",
+    .data[["date"]] == "2008-09-30" & grepl("Destiny", .data[["title"]]) ~ "Destiny 1: Gods of Night",
+    .data[["date"]] == "2008-10-28" & grepl("Destiny", .data[["title"]]) ~ "Destiny 2: Mere Mortals",
+    .data[["date"]] == "2008-11-25" & grepl("Destiny", .data[["title"]]) ~ "Destiny 3: Lost Souls",
+    .data[["date"]] == "1997-09-01" & grepl("Armageddon", .data[["title"]]) ~ "Day of Honor 2: Armageddon Sky",
+    .data[["date"]] == "1997-09-01" & grepl("Ancient", .data[["title"]]) ~ "Day of Honor 1: Ancient Blood",
+    .data[["date"]] == "1997-10-01" & grepl("Treaty", .data[["title"]]) ~ "Day of Honor 4: Treaty's Law",
+    .data[["date"]] == "1997-10-01" & grepl("Klingon", .data[["title"]]) ~ "Day of Honor 3: Her Klingon Soul",
+    .data[["date"]] == "2001-01-01" & grepl("^Dark Passions$", .data[["title"]]) ~ "Dark Passions 1",
+    .data[["date"]] == "1997" & .data[["title"]] == "Day of Honor" ~ "Day of Honor: Episode Novelization",
+    .data[["date"]] == "2011-11-29" & grepl("Lions", .data[["title"]]) ~ "Mirror Universe: Rise Like Lions",
+    .data[["date"]] == "1999-03-01" & grepl("Liberated", .data[["title"]]) ~ "Rebels 3: The Liberated",
+    .data[["date"]] == "2000-04-01" & grepl("Inferno", .data[["title"]]) ~ "Millennium 3: Inferno",
+    .data[["date"]] == "2001-05-01" & .data[["title"]] == "Avatar 1 of 2" ~ "Avatar 1",
+    .data[["date"]] == "2001-05-01" & .data[["title"]] == "Avatar: 2 of 2" ~ "Avatar 2",
+    .data[["date"]] == "2001-08-28" & grepl("Gateways:demons", .data[["title"]]) ~ "Gateways: Demons of Air and Darkness",
+    .data[["date"]] == "2002-01-01" & .data[["title"]] == "Millennium" ~ "Millennium (Omnibus)",
+    .data[["date"]] == "2002-09-01" & grepl("Twilight", .data[["title"]]) ~ "Mission Gamma 1: Twilight",
+    .data[["date"]] == "2002-09-01" & grepl("Spirit", .data[["title"]]) ~ "Mission Gamma 2: This Gray Spirit",
+    .data[["date"]] == "2002-10-01" & grepl("Cathedral", .data[["title"]]) ~ "Mission Gamma 3: Cathedral",
+    .data[["date"]] == "2002-10-01" & grepl("Lesser", .data[["title"]]) ~ "Mission Gamma 4: Lesser Evil",
+    .data[["date"]] == "2004-05-25" & .data[["title"]] =="Worlds of Star Trek Deep Space Nine" ~ "Worlds of Star Trek Deep Space Nine Vol 1: Cardassia and Andor",
+    .data[["date"]] == "2005-01-25" & grepl("Vol 2", .data[["title"]]) ~ "Worlds of Star Trek Deep Space Nine Vol 2: Trill and Bajor",
+    .data[["date"]] == "2005-01-25" & grepl("Vol 3", .data[["title"]]) ~ "Worlds of Star Trek Deep Space Nine Vol 3: Ferenginar and The Dominion",
+    TRUE ~ .data[["title"]]
+  ))
   x
 }
 
@@ -218,13 +338,14 @@ st_epub <- function(file, fields = NULL, chapter_pattern = NULL, add_pattern = N
   if(is.null(drop_sections)) drop_sections <- .st_sec_drop
   d <- epubr::epub(file, fields = fields, drop_sections = drop_sections, chapter_pattern = chapter_pattern,
                    add_pattern = add_pattern)
-  d <- st_add_series(d, file) %>% st_add_dedication()
+  d <- st_add_series(d, file) %>% st_add_dedication() %>% st_series_update()
   if(fix_date) d <- st_fix_date(d)
   d <- st_fix_bantam(d)
   d <- st_fix_nchap(d)
   if(fix_text){
     d <- st_fix_case(d)
-    d <- st_title_sub(d) %>% st_author_sub() %>% st_pub_sub()
+    d <- st_title_update(d, use_filename = TRUE)
+    d <- st_author_sub(d) %>% st_pub_sub()
     d <- dplyr::mutate_if(d, is.character, trimws)
   }
   if(is.function(cleaner)){

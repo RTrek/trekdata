@@ -245,25 +245,28 @@ tl_entries <- function(x){
   y
 }
 
-tl_abb <- function(){
-  series_abb <- c("CHA", "DS9", "ENT", "NF", "SCE", "SGZ", "ST", "TAS", "TLE", "TNG", "TOS", "VGR")
-  series <- c("Challenger", "Deep Space Nine", "Enterprise", "New Frontier", "Starfleet Corps of Engineers",
+st_abb <- function(){
+  series_abb <- c("CHA", "DS9", "DSC", "ENT", "NF", "SCE", "SGZ", "ST", "TAS", "TLE", "TNG", "TOS", "TTN", "VOY")
+  series <- c("Challenger", "Deep Space Nine", "Discovery", "Enterprise", "New Frontier",
+              "Starfleet Corps of Engineers",
               "Stargazer", "All-Series/Crossover", "The Animated Series", "The Lost Era",
-              "The Next Generation", "The Original Series", "Voyager")
+              "The Next Generation", "The Original Series", "Titan", "Voyager")
   anth_abb <- c("CON", "DS", "EL", "NL", "PAC", "SNW", "CT", "TLOD", "TNV", "TNV2", "TODW", "WLB", "YA")
   anth <- c(paste(
     c("Constellations", "Distant Shores", "Enterprise Logs", "New Frontier: No Limits",
       "Deep Space Nine: Prophecy and Change", "Strange New Worlds", "Tales from the Captain's Table",
       "The Lives of Dax", "The New Voyages", "The New Voyages 2", "Tales of the Dominion War",
       "Gateways: What Lay Beyond"), "Anthology"), "Young Adult Book")
-  dplyr::data_frame(collection = c(series, anth), abb = c(series_abb, anth_abb),
-                    type = rep(c("series", "anthology"), times = c(length(series), length(anth))))
+  other_abb <- c("VAN", "KE", "SKR", "PRO", "SV", "AV", "REF")
+  other <- c("Vanguard", "Klingon Empire", "Seekers", "Prometheus", "Shatnerverse", "Abramsverse", "Reference")
+  dplyr::data_frame(collection = c(series, anth, other), abb = c(series_abb, anth_abb, other_abb),
+                    type = rep(c("series", "anthology", "other"), times = c(length(series), length(anth), length(other))))
 }
 
 .tl_collection <- function(x, type = c("series", "anthology")){
   type <- match.arg(type)
   x <- gsub("(.*) -- .*", "\\1", x)
-  y <- tl_abb()$abb[tl_abb()$type == type]
+  y <- st_abb()$abb[st_abb()$type == type]
   y <- sapply(y, function(i) grepl(paste0("\\(", i, "(-| )"), x) | grepl(paste0(i, "\\)"), x) |
                 grepl(paste0(" ", i, " "), x) | grepl(paste0("-", i, " "), x))
   if(!is.matrix(y)) y <- t(as.matrix(y))
