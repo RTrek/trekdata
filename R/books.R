@@ -138,7 +138,7 @@ st_fix_nchap <- function(x){
 
 .st_series_from_file <- function(x){
   x$series_abb <- purrr::map_chr(x[["file"]], ~{
-    gsub("\\d+ ([A-Z]+|[A-Z]+-[A-Z]+).*", "\\1", strsplit(.x, " - ")[[1]][1])
+    gsub("\\d+ ([A-Z9]+|[A-Z9]+-[A-Z9]+).*", "\\1", strsplit(.x, " - ")[[1]][1])
   })
   x
 }
@@ -146,7 +146,7 @@ st_fix_nchap <- function(x){
 .st_number_from_file <- function(x){
   x$number <- purrr::map_int(x[["file"]], ~{
     a1 <- strsplit(.x, " - ")[[1]][1]
-    a2 <- gsub("^\\d+ ([A-Z29]+|[A-Z29]+-[A-Z29]+) (\\d+)", "\\2", a1)
+    a2 <- gsub("^\\d+ ([A-Z9]+|[A-Z9]+-[A-Z9]+) (\\d+)", "\\2", a1)
     if(a1 == a2) a2 <- as.integer(NA)
     as.integer(a2)
   })
