@@ -246,19 +246,21 @@ tl_entries <- function(x){
 }
 
 st_abb <- function(){
-  series_abb <- c("CHA", "DS9", "DSC", "ENT", "NF", "SCE", "SGZ", "ST", "TAS", "TLE", "TNG", "TOS", "TTN", "VOY")
-  series <- c("Challenger", "Deep Space Nine", "Discovery", "Enterprise", "New Frontier",
-              "Starfleet Corps of Engineers",
-              "Stargazer", "All-Series/Crossover", "The Animated Series", "The Lost Era",
-              "The Next Generation", "The Original Series", "Titan", "Voyager")
+  series_abb <- c("AV", "CHA", "DS9", "DSC", "ENT", "KE", "NF", "PRO", "SKR", "SV",
+                  "SCE", "SGZ", "ST", "TAS", "TLE", "TNG", "TOS", "TTN","VAN", "VOY")
+  series <- c("Abramsverse", "Challenger", "Deep Space Nine", "Discovery", "Enterprise",
+              "Klingon Empire", "New Frontier", "Prometheus", "Seekers", "Shatnerverse",
+              "Starfleet Corps of Engineers", "Stargazer", "All-Series/Crossover",
+              "The Animated Series", "The Lost Era", "The Next Generation",
+              "The Original Series", "Titan", "Vanguard", "Voyager")
   anth_abb <- c("CON", "DS", "EL", "NL", "PAC", "SNW", "CT", "TLOD", "TNV", "TNV2", "TODW", "WLB", "YA")
   anth <- c(paste(
     c("Constellations", "Distant Shores", "Enterprise Logs", "New Frontier: No Limits",
       "Deep Space Nine: Prophecy and Change", "Strange New Worlds", "Tales from the Captain's Table",
       "The Lives of Dax", "The New Voyages", "The New Voyages 2", "Tales of the Dominion War",
       "Gateways: What Lay Beyond"), "Anthology"), "Young Adult Book")
-  other_abb <- c("VAN", "KE", "SKR", "PRO", "SV", "AV", "REF")
-  other <- c("Vanguard", "Klingon Empire", "Seekers", "Prometheus", "Shatnerverse", "Abramsverse", "Reference")
+  other_abb <- c("REF")
+  other <- c("Reference")
   dplyr::data_frame(collection = c(series, anth, other), abb = c(series_abb, anth_abb, other_abb),
                     type = rep(c("series", "anthology", "other"), times = c(length(series), length(anth), length(other))))
 }
