@@ -1,3 +1,8 @@
+# trekdata 0.2.0
+
+* General improvements, primarily to parsing functions.
+* Minor bug fixes.
+
 # trekdata 0.1.0
 
 * Added functions for parsing and curating externally sourced timeline data.

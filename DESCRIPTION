@@ -1,11 +1,12 @@
 Package: trekdata
 Title: Extract and Curate Datasets for the 'rtrek' Package
-Version: 0.1.0
+Version: 0.2.0
 Authors@R:
     c(person(given = "Matthew",
              family = "Leonawicz",
              role = c("aut", "cre"),
-             email = "matt_leonawicz@esource.com"))
+             email = "matt_leonawicz@esource.com",
+             comment = c(ORCID = "0000-0001-9452-2771")))
 Description: Provides functions for extracting and curating 'rtrek' package datasets from various data sources.
 License: MIT + file LICENSE
 Encoding: UTF-8
