@@ -6,15 +6,17 @@
 #'
 #' @param in_dir character.
 #' @param out_dir character.
+#' @param drop_unformatted logical, drop the marked files known to have extremely poor formatting/limited fields.
 #'
 #' @return returns invisibly
 #' @export
 #'
 #' @examples
 #' \dontrun{st_book_copy(in_dir, out_dir)}
-st_book_copy <- function(in_dir, out_dir){
+st_book_copy <- function(in_dir, out_dir, drop_unformatted = TRUE){
   if(!file.exists(out_dir)){ # runs if directory has not been created, does not check files
     files <- list.files(in_dir, pattern = ".epub$", recursive = TRUE, full.names = TRUE)
+    if(drop_unformatted) files <- files[!grepl("UNFORMATTED", files)]
     pat <- " \\(Retail-PubUpd\\)" # updated edition
     pat2 <- " \\(Retail\\)" # previous edition
     idx_updated <- grep(pat, files) # index of updated novels

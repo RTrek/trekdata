@@ -109,7 +109,8 @@ tl_entries <- function(x){
 .tl_move_linebreak <- function(x){
   fixes <- c("NOVELIZATION\\)178", "^     \\d+\\.\\d$",
              "^     \\d+-", "^\\s+\\([A-Z0-9 #]+\\)($|FN| -- )", "^     NOVELIZATION)$",
-             "^     \\d+\u00A7", "^      THY FATHER \\(TLE\\)$")
+             "^     \\d+\u00A7", "^      THY FATHER \\(TLE\\)$",
+             "     \" \\(ST SHORT STORY, SNW 8\\)$")
   idx <- grep(paste0(c("^     ([A-Za-z ]+\"-|\\d+, ).*", fixes), collapse = "|"), x)
   while(length(idx)){
     y <- gsub("^-", "", trimws(x[idx[1]]))
@@ -290,6 +291,8 @@ st_abb <- function(){
   x <- gsub("\\s+", " ", x)
   x <- gsub("\"", "", x)
   x <- gsub("\\(.*", "", x)
+  x <- gsub("'Q'UANDRY", "'Q'uandry", x)
+  x <- gsub("Ha'MARA", "Ha'Mara", x)
   trimws(x) %>% .tl_strip_detailed_date() %>% .tl_title_case()
 }
 
@@ -369,6 +372,8 @@ st_abb <- function(){
   x <- gsub("U\\.S\\.S\\.", "USS", x)
   x <- gsub("\"Seventy Years Ago,\"", "Seventy Years Ago,", x)
   x <- gsub("\\s+", " ", trimws(x))
+  x <- gsub("\\.([A-Za-z])", "\\. \\1", x)
+  x <- gsub("([\\d])(ST|ND|TH) ", "\\1\\L\\2\\E ", x, perl = TRUE)
   idx <- grep("^(\\d+|One) Years? Ago$", x)
   if(length(idx)) x[idx] <- NA
   x
@@ -411,5 +416,7 @@ tl_clean_entry <- function(x){
                      detailed_date = .tl_section_to_date(.data[["detailed_date"]], .data[["section"]]),
                      section = .tl_cleanup(.tl_unneeded_quotes(.data[["section"]])))
   d <- .tl_fix_warstories(d)
+  idx <- grep("spacedock|Kirk is believed killed|Chronology|television", d$title)
+  if(length(idx)) d <- dplyr::slice(d, -idx)
   d
 }

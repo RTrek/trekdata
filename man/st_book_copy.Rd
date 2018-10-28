@@ -4,12 +4,14 @@
 \alias{st_book_copy}
 \title{Copy Star Trek books}
 \usage{
-st_book_copy(in_dir, out_dir)
+st_book_copy(in_dir, out_dir, drop_unformatted = TRUE)
 }
 \arguments{
 \item{in_dir}{character.}
 
 \item{out_dir}{character.}
+
+\item{drop_unformatted}{logical, drop the marked files known to have extremely poor formatting/limited fields.}
 }
 \value{
 returns invisibly

@@ -18,11 +18,14 @@ tl_clean_text <- function(x, fix = c(151, 300)){
   x <- gsub("P&C", "PAC", x)
   x <- gsub("TFTCT", "CT", x)
   x <- gsub("VGR", "VOY", x)
+  x <- gsub("TITAN", "TTN", x)
   x <- gsub("([A-Za-z])\\(", "\\1 \\(", x)
   x <- gsub("TOS #78\\)", "\\(TOS #78\\)", x)
   x <- x[-grep("^\\s+-Episodes \\(not", x)]
   x <- romans_sub(x)
-  x <- gsub("(^.*)(PART|PARTS|Part|Parts|part|parts)( I)($|:| |-|\"|\\))", "\\1\\2 1\\4", x)
+  x <- gsub("(^.*)(PART|PARTS|Part|Parts|part|parts)( I)($|:| |-|\"|\\))", "\\1Part 1\\4", x)
+  x <- gsub("(^.*)(PART|PARTS|Part|Parts|part|parts)( II)($|:| |-|\"|\\))", "\\1Part 2\\4", x)
+  x <- gsub("\"(Unimatrix Zero|The Best of Both Worlds)\" Part (\\d)($|-.*)", "\"\\1 Part \\2\"\\3", x)
   idx <- sapply(fix, function(i) grep(paste0("^      ", i, " Story "), x))
   x[idx] <- gsub("      ", "    ", x[idx])
   x
