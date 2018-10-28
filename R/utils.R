@@ -14,6 +14,7 @@ romans_sub <- function(x){
 
 # Inject parallax into body of Stellar Cartography web page, remove title div
 .post_proc_html <- function(id = "sc"){
+  set.seed(1)
   font_title <- "@font-face {
     font-family: 'sc-title-font';
     src: url('https://raw.githubusercontent.com/leonawicz/trekfont/master/inst/fonts/FederationStarfleet.ttf') format('truetype');
@@ -169,7 +170,7 @@ build_site <- function(){
 #' @rdname build_site
 #' @export
 build_articles <- function(){
-  pkgdown::build_articles()
+  pkgdown::build_articles(lazy = FALSE)
   .post_proc_html(id = "sc")
   .post_proc_html(id = "rr")
 }
@@ -177,7 +178,7 @@ build_articles <- function(){
 #' @rdname build_site
 #' @export
 build_article <- function(id = "sc"){
-  pkgdown::build_article(id)
+  pkgdown::build_article(id, lazy = FALSE)
   .post_proc_html(id = id)
 }
 
