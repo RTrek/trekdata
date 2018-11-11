@@ -3,6 +3,8 @@
 trekdata
 ========
 
+**Author:** [Matthew Leonawicz](https://leonawicz.github.io/blog/) <a href="https://orcid.org/0000-0001-9452-2771" target="orcid.widget"> <image class="orcid" src="https://members.orcid.org/sites/default/files/vector_iD_icon.svg" height="16"></a> <br/> **License:** [MIT](https://opensource.org/licenses/MIT)<br/>
+
 [![Travis-CI Build Status](https://travis-ci.org/leonawicz/trekdata.svg?branch=master)](https://travis-ci.org/leonawicz/trekdata) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/leonawicz/trekdata?branch=master&svg=true)](https://ci.appveyor.com/project/leonawicz/trekdata) [![Coverage Status](https://img.shields.io/codecov/c/github/leonawicz/trekdata/master.svg)](https://codecov.io/github/leonawicz/trekdata?branch=master)
 
 The `trekdata` package assists with extracting and curating datasets that appear in the `rtrek` package. The scripts associated with this preparation from source data would typically appear in the `rtrek` repository `data-raw` folder.
