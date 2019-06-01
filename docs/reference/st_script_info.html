@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Copy Star Trek books — st_book_copy • trekdata</title>
+<title>Episode Script Information — st_script_info • trekdata</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -32,9 +32,9 @@
 
   <link href="../extra.css" rel="stylesheet">
   
-<meta property="og:title" content="Copy Star Trek books — st_book_copy" />
+<meta property="og:title" content="Episode Script Information — st_script_info" />
 
-<meta property="og:description" content="Copy Star Trek epub files, with some changes." />
+<meta property="og:description" content="Star Trek episode and movie transcript metadata." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -168,50 +168,32 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Copy Star Trek books</h1>
-    <small class="dont-index">Source: <a href='https://github.com/leonawicz/trekdata/blob/master/R/books.R'><code>R/books.R</code></a></small>
-    <div class="hidden name"><code>st_book_copy.Rd</code></div>
+    <h1>Episode Script Information</h1>
+    <small class="dont-index">Source: <a href='https://github.com/leonawicz/trekdata/blob/master/R/episodes.R'><code>R/episodes.R</code></a></small>
+    <div class="hidden name"><code>st_script_info.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Copy Star Trek epub files, with some changes.</p>
+    <p>Star Trek episode and movie transcript metadata.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>st_book_copy</span>(<span class='no'>in_dir</span>, <span class='no'>out_dir</span>, <span class='kw'>drop_unformatted</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
-    
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>in_dir</th>
-      <td><p>character.</p></td>
-    </tr>
-    <tr>
-      <th>out_dir</th>
-      <td><p>character.</p></td>
-    </tr>
-    <tr>
-      <th>drop_unformatted</th>
-      <td><p>logical, drop the marked files known to have extremely poor formatting/limited fields.</p></td>
-    </tr>
-    </table>
-    
+    <pre class="usage"><span class='fu'>st_script_info</span>()</pre>
+        
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>returns invisibly</p>
+    <p>a data frame</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><span class='co'># NOT RUN {</span>
-<span class='fu'>st_book_copy</span>(<span class='no'>in_dir</span>, <span class='no'>out_dir</span>)
+<span class='fu'>st_script_info</span>()
 <span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
       

@@ -1,3 +1,12 @@
+#' Episode Script Information
+#'
+#' Star Trek episode and movie transcript metadata.
+#'
+#' @return a data frame
+#' @export
+#'
+#' @examples
+#' \dontrun{st_script_info()}
 st_script_info <- function(){
   url <- "https://scifi.media/star-trek/transcripts/"
   x <- xml2::read_html(url) %>% rvest::html_nodes(".fusion-text p") %>% rvest::html_children()

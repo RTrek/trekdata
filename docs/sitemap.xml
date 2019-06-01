@@ -1,39 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>http://leonawicz.github.io//index.html</loc>
+    <loc>http://leonawicz.github.io/trekdata/index.html</loc>
   </url>
   <url>
-    <loc>http://leonawicz.github.io//reference/build_site.html</loc>
+    <loc>http://leonawicz.github.io/trekdata/reference/build_site.html</loc>
   </url>
   <url>
-    <loc>http://leonawicz.github.io//reference/st_book_copy.html</loc>
+    <loc>http://leonawicz.github.io/trekdata/reference/st_book_copy.html</loc>
   </url>
   <url>
-    <loc>http://leonawicz.github.io//reference/st_epub.html</loc>
+    <loc>http://leonawicz.github.io/trekdata/reference/st_epub.html</loc>
   </url>
   <url>
-    <loc>http://leonawicz.github.io//reference/st_epub_test.html</loc>
+    <loc>http://leonawicz.github.io/trekdata/reference/st_epub_test.html</loc>
   </url>
   <url>
-    <loc>http://leonawicz.github.io//reference/tame_tweets.html</loc>
+    <loc>http://leonawicz.github.io/trekdata/reference/st_script_info.html</loc>
   </url>
   <url>
-    <loc>http://leonawicz.github.io//reference/tl_clean_text.html</loc>
+    <loc>http://leonawicz.github.io/trekdata/reference/tame_tweets.html</loc>
   </url>
   <url>
-    <loc>http://leonawicz.github.io//reference/tl_entries.html</loc>
+    <loc>http://leonawicz.github.io/trekdata/reference/tl_clean_text.html</loc>
   </url>
   <url>
-    <loc>http://leonawicz.github.io//reference/tl_footnotes.html</loc>
+    <loc>http://leonawicz.github.io/trekdata/reference/tl_entries.html</loc>
   </url>
   <url>
-    <loc>http://leonawicz.github.io//reference/trekdata.html</loc>
+    <loc>http://leonawicz.github.io/trekdata/reference/tl_footnotes.html</loc>
   </url>
   <url>
-    <loc>http://leonawicz.github.io//reference/update_local_tweets.html</loc>
+    <loc>http://leonawicz.github.io/trekdata/reference/trekdata.html</loc>
   </url>
   <url>
-    <loc>http://leonawicz.github.io//articles/trekdata.html</loc>
+    <loc>http://leonawicz.github.io/trekdata/reference/update_local_tweets.html</loc>
+  </url>
+  <url>
+    <loc>http://leonawicz.github.io/trekdata/articles/trekdata.html</loc>
   </url>
 </urlset>

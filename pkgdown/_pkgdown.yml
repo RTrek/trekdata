@@ -1,4 +1,4 @@
-url: http://leonawicz.github.io/
+url: http://leonawicz.github.io/trekdata
 
 template:
   params:
@@ -23,6 +23,7 @@ reference:
   - st_book_copy
   - st_epub
   - st_epub_test
+  - st_script_info
 - title: rtrek website helpers
   contents:
   - build_site
