@@ -248,7 +248,7 @@ tl_entries <- function(x){
 
 st_abb <- function(){
   series_abb <- c("AV", "CHA", "DS9", "DSC", "ENT", "KE", "NF", "PRO", "SKR", "SV",
-                  "SCE", "SGZ", "ST", "TAS", "TLE", "TNG", "TOS", "TTN","VAN", "VOY")
+                  "SCE", "SGZ", "ST", "TAS", "TLE", "TNG", "TOS", "TTN", "VAN", "VOY")
   series <- c("Abramsverse", "Challenger", "Deep Space Nine", "Discovery", "Enterprise",
               "Klingon Empire", "New Frontier", "Prometheus", "Seekers", "Shatnerverse",
               "Starfleet Corps of Engineers", "Stargazer", "All-Series/Crossover",
@@ -263,7 +263,8 @@ st_abb <- function(){
   other_abb <- c("REF")
   other <- c("Reference")
   dplyr::data_frame(collection = c(series, anth, other), abb = c(series_abb, anth_abb, other_abb),
-                    type = rep(c("series", "anthology", "other"), times = c(length(series), length(anth), length(other))))
+                    type = rep(c("series", "anthology", "other"),
+                               times = c(length(series), length(anth), length(other))))
 }
 
 .tl_collection <- function(x, type = c("series", "anthology")){

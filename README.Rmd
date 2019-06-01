@@ -29,6 +29,6 @@ However, since the datasets are derived from varied sources and require a number
 You can install the development version of `trekdata` from GitHub with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("leonawicz/trekdata")
+# install.packages("remotes")
+remotes::install_github("leonawicz/trekdata")
 ```

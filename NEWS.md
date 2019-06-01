@@ -1,3 +1,9 @@
+# trekdata 0.2.1
+
+* Added functions for working with episode scripts.
+* General cleanup.
+* Minor bug fixes.
+
 # trekdata 0.2.0
 
 * General improvements, primarily to parsing functions.

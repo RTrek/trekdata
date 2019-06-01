@@ -1,5 +1,8 @@
 {
-  "@context": ["https://doi.org/10.5063/schema/codemeta-2.0", "http://schema.org"],
+  "@context": [
+    "https://doi.org/10.5063/schema/codemeta-2.0",
+    "http://schema.org"
+  ],
   "@type": "SoftwareSourceCode",
   "identifier": "trekdata",
   "description": "Provides functions for extracting and curating 'rtrek' package datasets from various data sources.",
@@ -7,14 +10,14 @@
   "codeRepository": "https://github.com/leonawicz/trekdata",
   "issueTracker": "https://github.com/leonawicz/trekdata/issues",
   "license": "https://spdx.org/licenses/MIT",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
-    "version": "3.5.1",
+    "version": "3.6.0",
     "url": "https://r-project.org"
   },
-  "runtimePlatform": "R version 3.5.1 (2018-07-02)",
+  "runtimePlatform": "R version 3.6.0 (2019-04-26)",
   "author": [
     {
       "@type": "Person",
@@ -116,6 +119,18 @@
     },
     {
       "@type": "SoftwareApplication",
+      "identifier": "tibble",
+      "name": "tibble",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=tibble"
+    },
+    {
+      "@type": "SoftwareApplication",
       "identifier": "dplyr",
       "name": "dplyr",
       "provider": {
@@ -197,10 +212,40 @@
         "url": "https://cran.r-project.org"
       },
       "sameAs": "https://CRAN.R-project.org/package=tidyr"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "xml2",
+      "name": "xml2",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=xml2"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "rvest",
+      "name": "rvest",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=rvest"
     }
   ],
   "releaseNotes": "https://github.com/leonawicz/trekdata/blob/master/NEWS.md",
-  "readme": "https://github.com/leonawicz/trekdata/blob/master/README.md",
-  "fileSize": "14.795KB",
-  "contIntegration": ["https://travis-ci.org/leonawicz/trekdata", "https://ci.appveyor.com/project/leonawicz/trekdata", "https://codecov.io/github/leonawicz/trekdata?branch=master"]
+  "fileSize": "16.603KB",
+  "contIntegration": [
+    "https://travis-ci.org/leonawicz/trekdata",
+    "https://ci.appveyor.com/project/leonawicz/trekdata",
+    "https://codecov.io/github/leonawicz/trekdata?branch=master"
+  ],
+  "contributor": {},
+  "copyrightHolder": {},
+  "funder": {}
 }

@@ -4,3 +4,4 @@ docs/clone_notes.html
 .RData
 .Ruserdata
 inst/doc
+data-raw/episode_scripts
