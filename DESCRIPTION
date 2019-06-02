@@ -26,6 +26,7 @@ Imports:
     tibble,
     dplyr,
     purrr,
+    lubridate,
     rtweet,
     pkgdown,
     epubr,
