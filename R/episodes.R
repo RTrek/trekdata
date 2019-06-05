@@ -112,6 +112,8 @@ st_script_info <- function(){
 #'
 #' Download episode scripts into a nested tidy data frame.
 #'
+#' Downloads almost entirely come from \code{scifi.media}, but when unavailable are pulled from \code{chakoteya.net}.
+#'
 #' @param download_dir download directory.
 #' @param keep logical, if \code{FALSE} (default) then downloaded files are removed after processing.
 #' @param overwrite logical, if \code{FALSE} (default) then no downloading occurs for any file already present in \code{download_dir}.
@@ -157,14 +159,12 @@ st_script_download <- function(download_dir = tempdir(), keep = FALSE, overwrite
         sink()
       }
     }
-
-    # TODO: process script
     cat("Reading file: ", file, "...\n", sep = "")
-    txt <- readLines(file, warn = FALSE) # temporary, just returning the lines of raw text for now
-
+    txt <- readLines(file, warn = FALSE)
     if(!keep) unlink(file, recursive = TRUE, force = TRUE)
     txt
   }
+
   dplyr::mutate(d, file = NULL, text = purrr::map(1:nrow(d), get_script))
 }
 
@@ -243,4 +243,55 @@ st_script_download <- function(download_dir = tempdir(), keep = FALSE, overwrite
   x <- gsub("Terra Prime, Part 2", "Terra Prime", x)
   x <- gsub("Two Day and Two Nights", "Two Days and Two Nights", x)
   x
+}
+
+#' Curate nested scripts to data frames
+#'
+#' Curate nested vectors of script lines to data frames.
+#'
+#' This currently works only on TNG scripts; no need to run in on all other scripts because it will not produce output for them. Yet to be generalized.
+#'
+#' @param x a vector of lines of script. See example.
+#'
+#' @return a data frame
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' x <- st_script_download("data-raw/episode_scripts", TRUE)
+#' system.time(x <- dplyr::mutate(x, text2 = purrr::map(text, st_script_text_df))) # ~6 minutes
+#' }
+st_script_text_df <- function(x){
+  .f <- function(x){
+    d <- tibble::enframe(x, "line", "text")
+    txt <- strsplit(d$text, "\n+")[[1]]
+    txt <- txt[txt != ""]
+    line_num <- gsub("(^\\d+)\\s+.*", "\\1", txt[grepl("^\\d+ ", txt)])
+    if(!length(line_num)) line_num <- NA_character_
+    prsp <- gsub("^\\d+\\s+", "", txt[grepl("^\\d+ ", txt)])
+    if(!length(prsp)) prsp <- NA_character_
+    setting <- paste(txt[grepl("^\t[^\t]", txt)], collapse = " ")
+    line <- paste(txt[grepl("^\t\t\t[^\t]", txt)], collapse = " ")
+    desc <- paste(txt[grepl("^\t\t\t\t[^\t]", txt)], collapse = " ")
+    chr <- paste(txt[grepl("^\t\t\t\t\t[^\t]", txt)], collapse = " ")
+    tibble::tibble(line_number = line_num, perspective = prsp, setting = setting,
+                   line = line, description = desc, character = chr) %>%
+      dplyr::mutate_all(list(~gsub("\t", "", .)))
+  }
+
+  x <- paste0(x, collapse = "\n")
+  strsplit(gsub("(\n\\d+)(\\s+)", "\\1__\\1\\2", x), "\n\\d+__")[[1]] %>%
+  purrr::map_dfr(~{
+    n <- length(strsplit(.x, "\t\t\t\t\t")[[1]])
+    if(n <= 2){
+      x <- .x
+    } else {
+      x <- strsplit(gsub("(\t\t\t\t\t)([^\t])", "_\\1_\\1\\2", .x), "_\t\t\t\t\t_")[[1]] %>% unlist()
+      x <- c(paste0(x[1], x[2]), x[-c(1:2)])
+    }
+    purrr::map_df(x, .f) %>% tidyr::fill(.data[["line_number"]], .data[["perspective"]]) %>%
+      dplyr::select(c("line_number", "perspective", "setting", "description", "character", "line")) %>%
+      dplyr::mutate_all(list(~ifelse(. == "", NA_character_, .))) %>%
+      dplyr::filter_at(dplyr::vars(setting, description, character, line), dplyr::any_vars(!is.na(.)))
+  })
 }

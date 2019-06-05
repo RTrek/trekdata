@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Function reference • trekdata</title>
+<title>Curate nested scripts to data frames — st_script_text_df • trekdata</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -32,7 +32,10 @@
 
   <link href="../extra.css" rel="stylesheet">
   
-<meta property="og:title" content="Function reference" />
+<meta property="og:title" content="Curate nested scripts to data frames — st_script_text_df" />
+
+<meta property="og:description" content="Curate nested vectors of script lines to data frames." />
+<meta name="twitter:card" content="summary" />
 
 
 
@@ -59,7 +62,7 @@
   </head>
 
   <body>
-    <div class="container template-reference-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
   <div class="container">
@@ -163,132 +166,57 @@
       </header>
 
 <div class="row">
-  <div class="contents col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Reference</h1>
+    <h1>Curate nested scripts to data frames</h1>
+    <small class="dont-index">Source: <a href='https://github.com/leonawicz/trekdata/blob/master/R/episodes.R'><code>R/episodes.R</code></a></small>
+    <div class="hidden name"><code>st_script_text_df.Rd</code></div>
     </div>
 
-    <table class="ref-index">
+    <div class="ref-description">
+    
+    <p>Curate nested vectors of script lines to data frames.</p>
+    
+    </div>
 
-    <colgroup>
-      
-      <col class="alias" />
-      <col class="title" />
-    </colgroup>
-
-    <tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-package" class="hasAnchor"><a href="#section-package" class="anchor"></a>Package</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      <tr>
-        
-        <td>
-          <p><code><a href="trekdata.html">trekdata</a></code> </p>
-        </td>
-        <td><p>trekdata: Functions for extracting and curating <code>rtrek</code> package datasets.</p></td>
-      </tr>
-    </tbody><tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-rtrek-data-prep" class="hasAnchor"><a href="#section-rtrek-data-prep" class="anchor"></a>rtrek data prep</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      <tr>
-        
-        <td>
-          <p><code><a href="update_local_tweets.html">update_local_tweets()</a></code> </p>
-        </td>
-        <td><p>Update tweets</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="tame_tweets.html">tame_tweets()</a></code> </p>
-        </td>
-        <td><p>Tame tweets</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="tl_clean_text.html">tl_clean_text()</a></code> </p>
-        </td>
-        <td><p>Initial Timeline Text Cleaning</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="tl_entries.html">tl_entries()</a></code> </p>
-        </td>
-        <td><p>Timeline Entries Data Frame</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="tl_footnotes.html">tl_footnotes()</a></code> </p>
-        </td>
-        <td><p>Timeline Footnotes Data Frame</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="st_book_copy.html">st_book_copy()</a></code> </p>
-        </td>
-        <td><p>Copy Star Trek books</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="st_epub.html">st_epub()</a></code> </p>
-        </td>
-        <td><p>Read Star Trek epub files</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="st_epub_test.html">st_epub_test()</a></code> </p>
-        </td>
-        <td><p>Testing function for Star Trek books</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="st_script_info.html">st_script_info()</a></code> </p>
-        </td>
-        <td><p>Episode Script Information</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="st_script_download.html">st_script_download()</a></code> </p>
-        </td>
-        <td><p>Download episode scripts</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="st_script_text_df.html">st_script_text_df()</a></code> </p>
-        </td>
-        <td><p>Curate nested scripts to data frames</p></td>
-      </tr>
-    </tbody><tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-rtrek-website-helpers" class="hasAnchor"><a href="#section-rtrek-website-helpers" class="anchor"></a>rtrek website helpers</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      <tr>
-        
-        <td>
-          <p><code><a href="build_site.html">build_site()</a></code> <code><a href="build_site.html">build_articles()</a></code> <code><a href="build_site.html">build_article()</a></code> </p>
-        </td>
-        <td><p>Website build helpers</p></td>
-      </tr>
-    </tbody>
+    <pre class="usage"><span class='fu'>st_script_text_df</span>(<span class='no'>x</span>)</pre>
+    
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>x</th>
+      <td><p>a vector of lines of script. See example.</p></td>
+    </tr>
     </table>
-  </div>
+    
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
+    <p>a data frame</p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>This currently works only on TNG scripts; no need to run in on all other scripts because it will not produce output for them. Yet to be generalized.</p>
+    
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='st_script_download.html'>st_script_download</a></span>(<span class='st'>"data-raw/episode_scripts"</span>, <span class='fl'>TRUE</span>)
+<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/system.time'>system.time</a></span>(<span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>dplyr</span><span class='kw ns'>::</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span>(<span class='no'>x</span>, <span class='kw'>text2</span> <span class='kw'>=</span> <span class='kw pkg'>purrr</span><span class='kw ns'>::</span><span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map</a></span>(<span class='no'>text</span>, <span class='no'>st_script_text_df</span>))) <span class='co'># ~6 minutes</span>
+<span class='co'># }</span></pre>
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#section-package">Package</a></li>
-      <li><a href="#section-rtrek-data-prep">rtrek data prep</a></li>
-      <li><a href="#section-rtrek-website-helpers">rtrek website helpers</a></li>
+      <li><a href="#arguments">Arguments</a></li>
+      
+      <li><a href="#value">Value</a></li>
+
+      <li><a href="#details">Details</a></li>
+      
+      <li><a href="#examples">Examples</a></li>
     </ul>
+
   </div>
 </div>
 

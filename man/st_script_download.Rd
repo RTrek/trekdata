@@ -20,6 +20,9 @@ a data frame; may write files to disk.
 \description{
 Download episode scripts into a nested tidy data frame.
 }
+\details{
+Downloads almost entirely come from \code{scifi.media}, but when unavailable are pulled from \code{chakoteya.net}.
+}
 \examples{
 \dontrun{x <- st_script_download("data-raw/episode_scripts", TRUE)}
 }
