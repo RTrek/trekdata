@@ -16,7 +16,7 @@ a data frame
 Curate nested vectors of script lines to data frames.
 }
 \details{
-This currently works only on TNG scripts; no need to run in on all other scripts because it will not produce output for them. Yet to be generalized.
+This currently works well (but imperfectly) for most scripts; it does not yet work for ENT, TAS, or a couple TOS scripts.
 }
 \examples{
 \dontrun{

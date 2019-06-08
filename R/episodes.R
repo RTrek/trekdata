@@ -249,7 +249,7 @@ st_script_download <- function(download_dir = tempdir(), keep = FALSE, overwrite
 #'
 #' Curate nested vectors of script lines to data frames.
 #'
-#' This currently works only on TNG scripts; no need to run in on all other scripts because it will not produce output for them. Yet to be generalized.
+#' This currently works well (but imperfectly) for most scripts; it does not yet work for ENT, TAS, or a couple TOS scripts.
 #'
 #' @param x a vector of lines of script. See example.
 #'
@@ -263,8 +263,7 @@ st_script_download <- function(download_dir = tempdir(), keep = FALSE, overwrite
 #' }
 st_script_text_df <- function(x){
   .f <- function(x){
-    d <- tibble::enframe(x, "line", "text")
-    txt <- strsplit(d$text, "\n+")[[1]]
+    txt <- strsplit(x, "\n+")[[1]]
     txt <- txt[txt != ""]
     line_num <- gsub("(^\\d+)\\s+.*", "\\1", txt[grepl("^\\d+ ", txt)])
     if(!length(line_num)) line_num <- NA_character_
@@ -276,22 +275,58 @@ st_script_text_df <- function(x){
     chr <- paste(txt[grepl("^\t\t\t\t\t[^\t]", txt)], collapse = " ")
     tibble::tibble(line_number = line_num, perspective = prsp, setting = setting,
                    line = line, description = desc, character = chr) %>%
-      dplyr::mutate_all(list(~gsub("\t", "", .)))
+      dplyr::mutate_all(list(~trimws(gsub("\t", "", .))))
   }
 
-  x <- paste0(x, collapse = "\n")
-  strsplit(gsub("(\n\\d+)(\\s+)", "\\1__\\1\\2", x), "\n\\d+__")[[1]] %>%
-  purrr::map_dfr(~{
-    n <- length(strsplit(.x, "\t\t\t\t\t")[[1]])
-    if(n <= 2){
-      x <- .x
-    } else {
-      x <- strsplit(gsub("(\t\t\t\t\t)([^\t])", "_\\1_\\1\\2", .x), "_\t\t\t\t\t_")[[1]] %>% unlist()
-      x <- c(paste0(x[1], x[2]), x[-c(1:2)])
-    }
-    purrr::map_df(x, .f) %>% tidyr::fill(.data[["line_number"]], .data[["perspective"]]) %>%
-      dplyr::select(c("line_number", "perspective", "setting", "description", "character", "line")) %>%
-      dplyr::mutate_all(list(~ifelse(. == "", NA_character_, .))) %>%
-      dplyr::filter_at(dplyr::vars(setting, description, character, line), dplyr::any_vars(!is.na(.)))
-  })
+  .f2 <- function(x){
+    txt <- strsplit(x, "\n+")[[1]]
+    txt <- txt[!grepl("^Title: |^Stardate: |^Airdate: |Star Trek.*CBS|entertainment purposes only|their respective holders", txt)] # nolint
+    prsp_idx <- grep("^\\[.*\\]$", txt)
+    desc_idx <- grep("^\\(.*\\)$", txt)
+    line_idx <- grep("^[^a-z]+\\: .*", txt)
+    txt[prsp_idx] <- paste0("\n_prsp__PRSP_", txt[prsp_idx])
+    txt[line_idx] <- paste0("\n_line__LINE_", txt[line_idx])
+    txt[desc_idx] <- paste0("\n_DESC_", txt[desc_idx])
+    txt <- paste0(txt, collapse = "\n")
+    txt <- strsplit(txt, "\n\n")[[1]]
+    txt <- gsub("^\n", "", txt)
+    txt <- gsub("\n", " ", txt)
+    txt <- strsplit(paste0(txt, collapse = ""), "_prsp_|_line_")[[1]]
+    txt <- txt[txt != ""]
+    prsp_idx <- grep("^_PRSP_\\[", txt)
+    txt[prsp_idx] <- paste0(txt[prsp_idx], txt[prsp_idx + 1])
+    txt <- txt[-c(prsp_idx + 1)]
+    prsp <- ifelse(grepl("^_PRSP_", txt), gsub("_PRSP_\\[|\\]$", "", purrr::map_chr(txt, ~strsplit(.x, "_DESC_|_LINE_")[[1]][1])), NA_character_) # nolint
+    line <- sapply(strsplit(txt, "_LINE_"), "[", 2)
+    line <- sapply(strsplit(line, "_DESC_"), "[", 1)
+    chr <- gsub("(^[^a-z]+)\\: .*", "\\1", line)
+    line <- gsub("^[^a-z]+\\: (.*)", "\\1", line)
+    desc <- ifelse(grepl("_DESC_", txt), gsub("\\(|\\)$", "", purrr::map_chr(txt, ~strsplit(.x, "_DESC_")[[1]][2])), NA_character_) # nolint
+    desc <- gsub("\\)$", "", sapply(strsplit(desc, "_LINE_"), "[", 1))
+    tibble::tibble(line_number = seq_along(txt), perspective = prsp, setting = NA_character_,
+                   description = desc, character = chr, line = line) %>%
+      dplyr::mutate_all(list(~trimws(gsub("\t", "", .)))) %>%
+      tidyr::fill(.data[["perspective"]])
+  }
+
+  if(grepl("^Title: ", x[1])){
+    x <- paste0(x, collapse = "\n")
+    .f2(x)
+  } else {
+    x <- paste0(x, collapse = "\n")
+    strsplit(gsub("(\n\\d+)(\\s+)", "\\1__\\1\\2", x), "\n\\d+__")[[1]] %>%
+      purrr::map_dfr(~{
+        n <- length(strsplit(.x, "\t\t\t\t\t")[[1]])
+        if(n <= 2){
+          x <- .x
+        } else {
+          x <- strsplit(gsub("(\t\t\t\t\t)([^\t])", "_\\1_\\1\\2", .x), "_\t\t\t\t\t_")[[1]] %>% unlist()
+          x <- c(paste0(x[1], x[2]), x[-c(1:2)])
+        }
+        purrr::map_df(x, .f) %>% tidyr::fill(.data[["line_number"]], .data[["perspective"]]) %>%
+          dplyr::select(c("line_number", "perspective", "setting", "description", "character", "line")) %>%
+          dplyr::mutate_all(list(~ifelse(. == "", NA_character_, .))) %>%
+          dplyr::filter_at(dplyr::vars(setting, description, character, line), dplyr::any_vars(!is.na(.)))
+      })
+  }
 }
