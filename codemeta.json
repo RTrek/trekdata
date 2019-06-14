@@ -10,7 +10,7 @@
   "codeRepository": "https://github.com/leonawicz/trekdata",
   "issueTracker": "https://github.com/leonawicz/trekdata/issues",
   "license": "https://spdx.org/licenses/MIT",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -251,7 +251,7 @@
     }
   ],
   "releaseNotes": "https://github.com/leonawicz/trekdata/blob/master/NEWS.md",
-  "fileSize": "18.583KB",
+  "fileSize": "20.731KB",
   "contIntegration": [
     "https://travis-ci.org/leonawicz/trekdata",
     "https://ci.appveyor.com/project/leonawicz/trekdata",
@@ -259,5 +259,6 @@
   ],
   "contributor": {},
   "copyrightHolder": {},
-  "funder": {}
+  "funder": {},
+  "readme": "https://github.com/leonawicz/trekdata/blob/master/README.md"
 }

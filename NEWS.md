@@ -1,3 +1,7 @@
+# trekdata 0.3.0
+
+* Completed the first version of episode/movie script curation that covers all scripts.
+
 # trekdata 0.2.1
 
 * Added functions for working with episode scripts.

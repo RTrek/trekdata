@@ -51,7 +51,8 @@ st_script_info <- function(){
   d <- dplyr::arrange(d, .data[["format"]], .data[["series"]], .data[["number"]]) %>%
     tidyr::fill(.data[["season"]]) %>%
     dplyr::filter(!(is.na(.data[["url"]]) & .data[["number"]] %in% c(2, 74))) %>%
-    dplyr::mutate(series = factor(.data[["series"]], levels = c(series_abb, "TAS"))) %>%
+    dplyr::mutate(series = factor(.data[["series"]], levels = c(series_abb, "TAS")),
+                  season = ifelse(.data[["format"]] == "movie", NA, .data[["season"]])) %>%
     dplyr::filter(!.data[["title"]] %in%
                     paste0(c("Caretaker", "Dark Frontier", "Flesh and Blood", "Endgame"), ", Part 2"))
 
@@ -117,13 +118,15 @@ st_script_info <- function(){
 #' @param download_dir download directory.
 #' @param keep logical, if \code{FALSE} (default) then downloaded files are removed after processing.
 #' @param overwrite logical, if \code{FALSE} (default) then no downloading occurs for any file already present in \code{download_dir}.
+#' @param force_alternate character, vector of titles to force use of the alternate url.
 #'
 #' @return a data frame; may write files to disk.
 #' @export
 #'
 #' @examples
 #' \dontrun{x <- st_script_download("data-raw/episode_scripts", TRUE)}
-st_script_download <- function(download_dir = tempdir(), keep = FALSE, overwrite = FALSE){
+st_script_download <- function(download_dir = tempdir(), keep = FALSE, overwrite = FALSE,
+                               force_alternate = "Cost of Living"){
   d <- st_script_info() %>%
     dplyr::mutate(
       file = ifelse(.data[["format"]] == "episode",
@@ -138,7 +141,7 @@ st_script_download <- function(download_dir = tempdir(), keep = FALSE, overwrite
     if(!file.exists(file) | overwrite){
       cat("Downloading ", basename(file), "...\n", sep = "")
       z <- tryCatch(utils::download.file(d$url[i], file, quite = TRUE), error = function(e) "fail")
-      if(z == "fail"){
+      if(z == "fail" | d$title[i] %in% force_alternate){
         x <- xml2::read_html(d$url2[i]) %>% rvest::html_text()
         x <- gsub("\r\n", "\n", gsub("\r\n\r\n", "\r\n", x))
         x <- gsub("Stardate\\:\n", "\nStardate\\: ", x)
@@ -174,7 +177,7 @@ st_script_download <- function(download_dir = tempdir(), keep = FALSE, overwrite
   x <- gsub("\u2018|\u2019", "'", x)
   x <- gsub("\u201C|\u201D", "\"", x)
   x <- gsub("\u2026", "...", x)
-  x <- gsub("\u00c3|\u00e1", "a", x)
+  x <- gsub("\u00c3|\u00e0|\u00e1", "a", x)
   x <- gsub("\u00e8|\u00e9", "e", x)
   x <- gsub("^\"|\"$", "", x)
   x <- tools::toTitleCase(trimws(x))
@@ -249,9 +252,11 @@ st_script_download <- function(download_dir = tempdir(), keep = FALSE, overwrite
 #'
 #' Curate nested vectors of script lines to data frames.
 #'
-#' This currently works well (but imperfectly) for most scripts; it does not yet work for ENT, TAS, or a couple TOS scripts.
+#' This function works well for all scripts, though imperfectly. There are some rare instances of two-column text formatting in original scripts. This edge case is not currently handled.
+#' Data extracted from original scripts is more informative and complete than those for which only caption-based transcriptions are available.
 #'
 #' @param x a vector of lines of script. See example.
+#' @param reset_line_numbers logical, adjust line numbers consistently and based on resulting data frame rows containing spoken lines.
 #'
 #' @return a data frame
 #' @export
@@ -259,15 +264,15 @@ st_script_download <- function(download_dir = tempdir(), keep = FALSE, overwrite
 #' @examples
 #' \dontrun{
 #' x <- st_script_download("data-raw/episode_scripts", TRUE)
-#' system.time(x <- dplyr::mutate(x, text2 = purrr::map(text, st_script_text_df))) # ~6 minutes
+#' system.time(x <- dplyr::mutate(x, text2 = purrr::map(text, st_script_text_df))) # ~10 minutes
 #' }
-st_script_text_df <- function(x){
+st_script_text_df <- function(x, reset_line_numbers = TRUE){
   .f <- function(x){
     txt <- strsplit(x, "\n+")[[1]]
     txt <- txt[txt != ""]
-    line_num <- gsub("(^\\d+)\\s+.*", "\\1", txt[grepl("^\\d+ ", txt)])
+    line_num <- as.integer(gsub("(^\\d+).*", "\\1", txt[grepl("^\\d+([A-Z]\\s+|\\s+|\t)", txt)]))
     if(!length(line_num)) line_num <- NA_character_
-    prsp <- gsub("^\\d+\\s+", "", txt[grepl("^\\d+ ", txt)])
+    prsp <- gsub("^\\d+", "", txt[grepl("^\\d+([A-Z]\\s+|\\s+|\t)", txt)])
     if(!length(prsp)) prsp <- NA_character_
     setting <- paste(txt[grepl("^\t[^\t]", txt)], collapse = " ")
     line <- paste(txt[grepl("^\t\t\t[^\t]", txt)], collapse = " ")
@@ -275,12 +280,13 @@ st_script_text_df <- function(x){
     chr <- paste(txt[grepl("^\t\t\t\t\t[^\t]", txt)], collapse = " ")
     tibble::tibble(line_number = line_num, perspective = prsp, setting = setting,
                    line = line, description = desc, character = chr) %>%
-      dplyr::mutate_all(list(~trimws(gsub("\t", "", .))))
+      dplyr::mutate_all(list(~gsub("\\s+", " ", trimws(gsub("\t", "", .)))))
   }
 
   .f2 <- function(x){
     txt <- strsplit(x, "\n+")[[1]]
-    txt <- txt[!grepl("^Title: |^Stardate: |^Airdate: |Star Trek.*CBS|entertainment purposes only|their respective holders", txt)] # nolint
+    if(!grepl("^Title: ", txt[1])) txt[1] <- paste0("Title: ", txt[1])
+    txt <- txt[!grepl("^Title: |^Stardate: |^Airdate: |Mission date: |Original Airdate: |Star Trek.*CBS|entertainment purposes only|their respective holders", txt)] # nolint
     prsp_idx <- grep("^\\[.*\\]$", txt)
     desc_idx <- grep("^\\(.*\\)$", txt)
     line_idx <- grep("^[^a-z]+\\: .*", txt)
@@ -303,21 +309,35 @@ st_script_text_df <- function(x){
     line <- gsub("^[^a-z]+\\: (.*)", "\\1", line)
     desc <- ifelse(grepl("_DESC_", txt), gsub("\\(|\\)$", "", purrr::map_chr(txt, ~strsplit(.x, "_DESC_")[[1]][2])), NA_character_) # nolint
     desc <- gsub("\\)$", "", sapply(strsplit(desc, "_LINE_"), "[", 1))
-    tibble::tibble(line_number = seq_along(txt), perspective = prsp, setting = NA_character_,
+    line_num <- seq_along(txt)
+    tibble::tibble(line_number = line_num, perspective = prsp, setting = NA_character_,
                    description = desc, character = chr, line = line) %>%
       dplyr::mutate_all(list(~trimws(gsub("\t", "", .)))) %>%
       tidyr::fill(.data[["perspective"]])
   }
 
-  if(grepl("^Title: ", x[1])){
-    x <- paste0(x, collapse = "\n")
-    .f2(x)
+  idx <- which(x != "")
+  if(idx[1] > 1) x <- x[-c(1:(idx[1] - 1))]
+  if(grepl("^Title: ", x[1]) | any(grepl("Mission date|Airdate", x[2:3]))){
+    x <- .f2(paste0(x, collapse = "\n"))
   } else {
+    is_movie <- any(grepl("^\\s{43}[A-Z]+", x))
+    if(is_movie){
+      x <- gsub("^\\s{42}(\\s+)([A-Z]+.*)", "\t\t\t\t\t\\2", x)
+      x <- gsub("^\\s{37}(\\(.*)", "\t\t\t\t\\1", x)
+      x <- gsub("^\\s{29}(.*)", "\t\t\t\\1", x)
+      x <- gsub("^\\s{19}(.*)", "\t\\1", x)
+      x <- gsub("^\\s{11}(\\s+)(.*)", "\\2", x)
+    }
+    miss_line_num <- grep("^\t[^\t][^a-z]*$", x)
+    line_num <- gsub("(^\\d+).*", "\\1", x[grepl("^\\d+([A-Z]\\s+|\\s+|\t)", x)])
+    if(!length(line_num) & length(miss_line_num))
+      x[miss_line_num] <- trimws(gsub("\\s\t", " ", paste(seq_along(miss_line_num), x[miss_line_num])))
     x <- paste0(x, collapse = "\n")
-    strsplit(gsub("(\n\\d+)(\\s+)", "\\1__\\1\\2", x), "\n\\d+__")[[1]] %>%
+    x <- strsplit(gsub("(\n\\d+)(\\s+)", "\\1__\\1\\2", x), "\n\\d+__")[[1]] %>%
       purrr::map_dfr(~{
         n <- length(strsplit(.x, "\t\t\t\t\t")[[1]])
-        if(n <= 2){
+        if(n <= 1){
           x <- .x
         } else {
           x <- strsplit(gsub("(\t\t\t\t\t)([^\t])", "_\\1_\\1\\2", .x), "_\t\t\t\t\t_")[[1]] %>% unlist()
@@ -329,4 +349,14 @@ st_script_text_df <- function(x){
           dplyr::filter_at(dplyr::vars(setting, description, character, line), dplyr::any_vars(!is.na(.)))
       })
   }
+  if(reset_line_numbers){
+    idx <- which(!is.na(x$line))
+    line_num <- rep(NA_integer_, nrow(x))
+    line_num[idx] <- seq_along(idx)
+    x <- dplyr::mutate(x, line_number = line_num)
+  }
+  dplyr::mutate(x, perspective = stringr::str_to_sentence(gsub("\\:$", "", .data[["perspective"]])),
+                description = stringr::str_to_sentence(gsub("\\(|\\)|\\:$", "", .data[["description"]])),
+                setting = stringr::str_to_sentence(gsub("\\:$", "", .data[["setting"]])),
+                character = stringr::str_to_title(gsub("\\:$", "", .data[["character"]])))
 }

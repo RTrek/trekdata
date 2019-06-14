@@ -1,6 +1,6 @@
 Package: trekdata
 Title: Extract and Curate Datasets for the 'rtrek' Package
-Version: 0.2.1
+Version: 0.3.0
 Authors@R:
     c(person(given = "Matthew",
              family = "Leonawicz",

@@ -5,7 +5,7 @@
 \title{Download episode scripts}
 \usage{
 st_script_download(download_dir = tempdir(), keep = FALSE,
-  overwrite = FALSE)
+  overwrite = FALSE, force_alternate = "Cost of Living")
 }
 \arguments{
 \item{download_dir}{download directory.}
@@ -13,6 +13,8 @@ st_script_download(download_dir = tempdir(), keep = FALSE,
 \item{keep}{logical, if \code{FALSE} (default) then downloaded files are removed after processing.}
 
 \item{overwrite}{logical, if \code{FALSE} (default) then no downloading occurs for any file already present in \code{download_dir}.}
+
+\item{force_alternate}{character, vector of titles to force use of the alternate url.}
 }
 \value{
 a data frame; may write files to disk.
