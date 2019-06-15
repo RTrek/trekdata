@@ -287,9 +287,29 @@ st_script_text_df <- function(x, reset_line_numbers = TRUE){
     txt <- strsplit(x, "\n+")[[1]]
     if(!grepl("^Title: ", txt[1])) txt[1] <- paste0("Title: ", txt[1])
     txt <- txt[!grepl("^Title: |^Stardate: |^Airdate: |Mission date: |Original Airdate: |Star Trek.*CBS|entertainment purposes only|their respective holders", txt)] # nolint
-    prsp_idx <- grep("^\\[.*\\]$", txt)
-    desc_idx <- grep("^\\(.*\\)$", txt)
+    idx <- grep("fade in", txt, ignore.case = TRUE)
+    if(length(idx)){
+      if(idx[1] > 1 & idx[1] < 10){
+        txt <- txt[idx[1]:length(txt)]
+        txt[idx[1]] <- "[Fade in]"
+      }
+    }
+
+    desc_idx <- grep("^\\(|\\)$", txt)
+    idx <- grep("^[^\\(].*(\\(|).*\\)$", txt)
+    if(length(idx)){
+      idx2 <- which(!grepl(".*\\(.*", txt[idx]))
+      if(length(idx2)){
+        txt[idx[idx2] - 1] <- paste(txt[idx[idx2] - 1], txt[idx][idx2])
+        txt <- txt[-idx[idx2]]
+      }
+      txt <- unlist(strsplit(gsub("^([^\\(].*)(\\(.*\\))$", "\\1_SPLIT_\\2", txt), "_SPLIT_"))
+      desc_idx <- grep("^\\(|\\)$", txt)
+    }
+
     line_idx <- grep("^[^a-z]+\\: .*", txt)
+    desc_idx <- grep("^\\(.*\\)$", txt)
+    prsp_idx <- grep("^\\[.*\\]$", txt)
     txt[prsp_idx] <- paste0("\n_prsp__PRSP_", txt[prsp_idx])
     txt[line_idx] <- paste0("\n_line__LINE_", txt[line_idx])
     txt[desc_idx] <- paste0("\n_DESC_", txt[desc_idx])
@@ -321,6 +341,13 @@ st_script_text_df <- function(x, reset_line_numbers = TRUE){
   if(grepl("^Title: ", x[1]) | any(grepl("Mission date|Airdate", x[2:3]))){
     x <- .f2(paste0(x, collapse = "\n"))
   } else {
+    idx <- grep("fade in", x, ignore.case = TRUE)
+    if(length(idx)){
+      if(idx[1] > 1 & x[idx[1] - 1] == ""){
+        x <- x[idx[1]:length(x)]
+        x[idx[1]] <- "\tFade in"
+      }
+    }
     is_movie <- any(grepl("^\\s{43}[A-Z]+", x))
     if(is_movie){
       x <- gsub("^\\s{42}(\\s+)([A-Z]+.*)", "\t\t\t\t\t\\2", x)
@@ -355,8 +382,10 @@ st_script_text_df <- function(x, reset_line_numbers = TRUE){
     line_num[idx] <- seq_along(idx)
     x <- dplyr::mutate(x, line_number = line_num)
   }
-  dplyr::mutate(x, perspective = stringr::str_to_sentence(gsub("\\:$", "", .data[["perspective"]])),
-                description = stringr::str_to_sentence(gsub("\\(|\\)|\\:$", "", .data[["description"]])),
-                setting = stringr::str_to_sentence(gsub("\\:$", "", .data[["setting"]])),
-                character = stringr::str_to_title(gsub("\\:$", "", .data[["character"]])))
+  dplyr::filter_all(x, dplyr::any_vars(!is.na(.))) %>%
+    dplyr::mutate(perspective = stringr::str_to_sentence(gsub("\\:$", "", .data[["perspective"]])),
+                  description = stringr::str_to_sentence(gsub("\\(|\\)|\\:$", "", .data[["description"]])),
+                  setting = stringr::str_to_sentence(gsub("\\:$", "", .data[["setting"]])),
+                  character = stringr::str_to_title(gsub("\\:$", "", .data[["character"]]))) %>%
+    dplyr::filter(!(is.na(.data[["line"]]) & !is.na(.data[["character"]])))
 }
