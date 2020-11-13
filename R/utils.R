@@ -119,7 +119,7 @@ romans_sub <- function(x){
   if(id == "rr"){
     idx <- grep("</header>", l) - 1
     idx2 <- grep("<footer>", l)
-    if(id == "rr") rr_content <- c(rr_content, rr2, rr2_content)
+    rr_content <- c(rr_content, rr2, rr2_content)
     l <- c(l[1:idx], "</header>\n\n", rr_content, l[idx2:length(l)])
   } else {
     idx <- grep("<div class=\"page-header toc-ignore\">", l)
@@ -127,15 +127,15 @@ romans_sub <- function(x){
     idx <- idx:(idx2[idx2 > idx][2])
     l <- l[-c(idx, idx + 1)]
   }
-  idx <- grep("<body>", l)
+  idx <- grep("<body", l)
   l <- c(l[1:idx], x, l[(idx + 1):length(l)])
   if(id == "rr"){
-    idx <- grep("</body>", l)
+    idx <- grep("</body", l)
     l[idx] <- paste0("</div>\n", l[idx])
   } else {
     idx <- grep("<div class=\"col-md-9 contents\">", l)
     l[idx] <- gsub("col-md-9", "col-md-12", l[idx])
-    idx <- grep("<div class=\"col-md-3 hidden-xs hidden-sm\" id=\"sidebar\">", l)
+    idx <- grep("<div class=\"col-md-3 hidden-xs hidden-sm\" id=\"pkgdown-sidebar\">", l)
     idx2 <- grep("</div>", l)
     idx <- idx:(idx2[idx2 > idx][2])
     l <- l[-c(idx, idx + 1)]
