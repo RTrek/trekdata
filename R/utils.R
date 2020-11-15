@@ -99,7 +99,7 @@ romans_sub <- function(x){
     '<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>\n', rrjs, "\n\n",
     '<style>body { background-color: #222222; color: #ffffff; } h2 {font-family: "sc-h2-font"; } h4 {font-family: "sc-h4-font"; }\n',
     '.parallax { background-image: url("https://raw.githubusercontent.com/leonawicz/rtrek/master/data-raw/images/tf.jpg"); }\n',
-    '#ds9-parallax { background-image: url("https://raw.githubusercontent.com/leonawicz/rtrek/master/data-raw/images/qb.jpg"); }\n',
+    '#ds9-parallax { background-image: url("https://raw.githubusercontent.com/leonawicz/rtrek/master/data-raw/images/qb.jpg"); margin-top:40px; }\n',
     font_title2, font_subtitle, font_h2, font_h4, par_title2, par_subtitle, '</style>\n\n',
     '<div class="main-container">\n  <div class="parallax">\n    ',
     '<a href="https://github.com/leonawicz/rtrek/">\n      ',
@@ -137,7 +137,7 @@ romans_sub <- function(x){
     l[idx] <- gsub("col-md-9", "col-md-12", l[idx])
     idx <- grep("<div class=\"col-md-3 hidden-xs hidden-sm\" id=\"pkgdown-sidebar\">", l)
     idx2 <- grep("</div>", l)
-    idx <- idx:(idx2[idx2 > idx][2])
+    idx <- idx:(idx2[idx2 > idx][1])
     l <- l[-c(idx, idx + 1)]
   }
   writeLines(l, file)
